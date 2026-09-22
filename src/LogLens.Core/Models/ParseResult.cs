@@ -28,6 +28,14 @@ public sealed record ParseDiagnostics(
     public int Requests => AccessLines + TruncatedAccessLines;
 
     /// <summary>
+    /// 404-Folgefehler je Kalendertag (UTC). Die Zeilen selbst sind aussortiert
+    /// (SPEC 3); der Zeitraumfilter braucht trotzdem ihre Verteilung, sonst zählt das
+    /// Finding „Fehlende 404-Seite" Tage mit, die gar nicht angezeigt werden.
+    /// </summary>
+    public IReadOnlyDictionary<DateOnly, int> NotFoundPageErrorLinesPerDay { get; init; } =
+        new Dictionary<DateOnly, int>();
+
+    /// <summary>
     /// Hosts aus dem <c>host:</c>-Feld aller Error-Zeilen, auch der aussortierten.
     /// Daraus ergibt sich die eigene Domain für die Referrer-Statistik (SPEC 6).
     /// </summary>

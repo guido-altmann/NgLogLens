@@ -1,0 +1,23 @@
+{
+  "updated": "2026-09-22",
+  "note": "Muster der Findings-Regeln nach docs/SPEC.md 7. Wie in attack-patterns.json sind es Teilzeichenketten ohne Regex; sie werden ohne Beachtung der Groß-/Kleinschreibung gegen Pfad und Query geprüft, roh und URL-dekodiert.",
+
+  "llmsTxtPaths": [
+    "/llms.txt",
+    "/llms-full.txt"
+  ],
+
+  "wellKnownPrefix": "/.well-known/",
+
+  "dotNetConfigPatterns": [
+    { "contains": "appsettings", "endsWith": ".json" },
+    "local.settings.json",
+    "web.config"
+  ],
+
+  "missingAssetPatterns": [
+    "favicon.ico",
+    "apple-touch-icon",
+    { "endsWith": ".map" }
+  ]
+}

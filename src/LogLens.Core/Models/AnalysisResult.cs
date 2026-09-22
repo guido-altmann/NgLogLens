@@ -15,6 +15,24 @@ public sealed record TimeRange(DateTimeOffset First, DateTimeOffset Last)
 }
 
 /// <summary>
+/// Gewählter Zeitraum der Ansicht (SPEC 8, „Globaler Zeitraumfilter"). Beide Grenzen
+/// sind Kalendertage in UTC und gehören zum Zeitraum dazu; null heißt „offen".
+/// </summary>
+public sealed record DayRange(DateOnly? From, DateOnly? To)
+{
+    public bool IsOpen => From is null && To is null;
+
+    /// <summary>Deckt der Zeitraum die gesamte Auswertung ab, ist er keine Einschränkung.</summary>
+    public bool Covers(TimeRange period)
+    {
+        ArgumentNullException.ThrowIfNull(period);
+        return (From is null || From <= period.FirstDay) && (To is null || To >= period.LastDay);
+    }
+
+    public bool Contains(DateOnly day) => day >= (From ?? DateOnly.MinValue) && day <= (To ?? DateOnly.MaxValue);
+}
+
+/// <summary>
 /// Anfragen eines Kalendertages je Klasse. Die Reihe ist lückenlos: Tage ohne
 /// Einträge stehen mit 0 darin (SPEC 6).
 /// </summary>
@@ -61,6 +79,16 @@ public sealed record AnalysisResult(
     int VisitorNetworksWithoutMonitoring)
 {
     public IReadOnlyList<ClassifiedEntry> Entries => Classification.Entries;
+
+    /// <summary>Empfehlungen aus den Regeln von SPEC 7, dringendste zuerst.</summary>
+    public IReadOnlyList<Finding> Findings { get; init; } = [];
+
+    /// <summary>
+    /// Gesetzt, wenn dieses Ergebnis auf einen Zeitraum eingeschränkt wurde. Die
+    /// Zählwerte der Parser-Diagnose beziehen sich weiterhin auf die ganze Datei:
+    /// Leerzeilen und unbekannte Zeilen haben keinen Zeitstempel.
+    /// </summary>
+    public DayRange? Range { get; init; }
 
     /// <summary>Eigene Domains: konfiguriert oder aus den Error-Zeilen erkannt.</summary>
     public IReadOnlyList<string> OwnDomains { get; init; } = [];

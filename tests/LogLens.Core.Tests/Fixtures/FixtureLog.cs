@@ -1,6 +1,7 @@
 using LogLens.Core;
 using LogLens.Core.Aggregation;
 using LogLens.Core.Classification;
+using LogLens.Core.Findings;
 using LogLens.Core.Models;
 using LogLens.Core.Parsing;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,7 +91,8 @@ internal static class FixtureLog
         var parsed = await ParseAsync().ConfigureAwait(false);
         var classified = await ClassifyAsync().ConfigureAwait(false);
 
-        return CreateAggregator().Aggregate([Name], parsed, classified);
+        var result = CreateAggregator().Aggregate([Name], parsed, classified);
+        return result with { Findings = CreateFindingEvaluator().Evaluate(result) };
     }
 
     /// <summary>Die Stufe „Aggregate" mit allen Teil-Aggregatoren, ohne DI.</summary>
@@ -104,6 +106,29 @@ internal static class FixtureLog
             new AttackAggregator(),
             new AiAgentAggregator(PatternResources.LoadAiAgents(), options),
             new ServerHealthAggregator());
+    }
+
+    /// <summary>Die Stufe „Findings" mit allen Regeln aus SPEC 7, in der Reihenfolge der DI.</summary>
+    public static FindingEvaluator CreateFindingEvaluator(
+        FindingOptions? options = null,
+        ParserOptions? parserOptions = null)
+    {
+        options ??= new FindingOptions();
+        parserOptions ??= new ParserOptions();
+        var attackPatterns = PatternResources.LoadAttackPatterns();
+        var patterns = PatternResources.LoadFindingPatterns();
+
+        return new FindingEvaluator(
+        [
+            new MissingNotFoundPageRule(parserOptions),
+            new ClientIpHeaderRule(),
+            new ScanBurstRule(options),
+            new LlmsTxtRule(patterns, options),
+            new AgentDiscoveryRule(attackPatterns, patterns, options),
+            new DotNetConfigRule(patterns, options),
+            new MissingAssetsRule(patterns, options),
+            new ServerErrorRule(options),
+        ]);
     }
 
     /// <summary>Der klassifizierte Eintrag zu einer Zeilennummer aus sample-expected.md.</summary>

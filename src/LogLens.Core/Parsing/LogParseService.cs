@@ -113,6 +113,8 @@ public sealed class LogParseService(
             UnknownSamples: unknownSamples,
             Files: fileInfos)
         {
+            NotFoundPageErrorLinesPerDay = NotFoundPageErrorsPerDay(errorEntries),
+
             // Vor dem Dedupe einsammeln: das host-Feld steht oft nur in den
             // 404-Folgefehlern, die gleich danach verschwinden (SPEC 3).
             RequestedHosts =
@@ -127,6 +129,28 @@ public sealed class LogParseService(
         };
 
         return new ParseResult(accessEntries, dedupe.Kept, diagnostics);
+    }
+
+    /// <summary>
+    /// Verteilung der aussortierten 404-Folgefehler über die Tage; nur dafür werden die
+    /// Error-Zeilen ein zweites Mal durchgegangen (siehe <see cref="ParseDiagnostics"/>).
+    /// </summary>
+    private Dictionary<DateOnly, int> NotFoundPageErrorsPerDay(List<ErrorEntry> errorEntries)
+    {
+        var perDay = new Dictionary<DateOnly, int>();
+
+        foreach (var entry in errorEntries)
+        {
+            if (!deduplicator.IsNotFoundPageFollowUp(entry))
+            {
+                continue;
+            }
+
+            var day = DateOnly.FromDateTime(entry.Timestamp.UtcDateTime);
+            perDay[day] = perDay.TryGetValue(day, out var count) ? count + 1 : 1;
+        }
+
+        return perDay;
     }
 
     private void Consume(

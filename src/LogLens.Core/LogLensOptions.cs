@@ -104,3 +104,22 @@ public sealed class AggregationOptions
     /// </summary>
     public IList<string> OwnDomains { get; } = [];
 }
+
+/// <summary>
+/// Schwellwerte der Empfehlungen (SPEC 7). Auch hier gilt: keine Magic Numbers in den
+/// Regeln.
+/// </summary>
+public sealed class FindingOptions
+{
+    /// <summary>Ab so vielen Anfragen eines Scanners im Burst-Fenster greift „Scan-Bursts".</summary>
+    public int ScanBurstRequests { get; set; } = 100;
+
+    /// <summary>Zeitfenster, in dem diese Anfragen liegen müssen (SPEC 7: 5 Minuten).</summary>
+    public TimeSpan ScanBurstWindow { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>Status, der eine fehlende Datei anzeigt; Auslöser mehrerer Regeln (SPEC 7).</summary>
+    public int NotFoundStatusCode { get; set; } = 404;
+
+    /// <summary>Höchstzahl aufgezählter Betroffener (Pfade, IPs) je Empfehlung.</summary>
+    public int MaxDetails { get; set; } = 10;
+}

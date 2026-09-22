@@ -1,5 +1,6 @@
 using LogLens.Core.Aggregation;
 using LogLens.Core.Classification;
+using LogLens.Core.Findings;
 using LogLens.Core.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -46,6 +47,25 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<AiAgentAggregator>();
         services.TryAddSingleton<ServerHealthAggregator>();
         services.TryAddSingleton<AnalysisAggregator>();
+
+        // Reihenfolge der Regeln ist die der Tabelle in SPEC 7; bei gleicher Priorität
+        // erscheinen die Empfehlungen genau so (SPEC 8.7).
+        services.TryAddSingleton(new FindingOptions());
+        services.TryAddSingleton(_ => PatternResources.LoadFindingPatterns());
+        services.TryAddEnumerable(
+        [
+            ServiceDescriptor.Singleton<IFindingRule, MissingNotFoundPageRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, ClientIpHeaderRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, ScanBurstRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, LlmsTxtRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, AgentDiscoveryRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, DotNetConfigRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, MissingAssetsRule>(),
+            ServiceDescriptor.Singleton<IFindingRule, ServerErrorRule>(),
+        ]);
+        services.TryAddSingleton<FindingEvaluator>();
+
+        services.TryAddSingleton<AnalysisRangeFilter>();
         services.TryAddSingleton<LogAnalysisPipeline>();
 
         return services;

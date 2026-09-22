@@ -106,6 +106,46 @@ public sealed class IpNetwork
         return $"{masked}/{prefixLength}";
     }
 
+    /// <summary>
+    /// Private Adressen nach RFC 1918 (10/8, 172.16/12, 192.168/16). Loopback und die
+    /// IPv6-Pendants (::1, fc00::/7, link-local) zählen mit: auch sie können nie die
+    /// Adresse eines echten Besuchers sein, sondern nur die eines Proxys (SPEC 7).
+    /// </summary>
+    public static bool IsPrivate(string? address) =>
+        IPAddress.TryParse(address, out var parsed) && IsPrivate(parsed);
+
+    public static bool IsPrivate(IPAddress address)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        if (IPAddress.IsLoopback(address))
+        {
+            return true;
+        }
+
+        if (address.AddressFamily == AddressFamily.InterNetworkV6)
+        {
+            return address.IsIPv6LinkLocal
+                || address.IsIPv6SiteLocal
+                || address.IsIPv6UniqueLocal;
+        }
+
+        if (address.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return false;
+        }
+
+        var bytes = address.GetAddressBytes();
+        return bytes[0] switch
+        {
+            10 => true,
+            172 => bytes[1] is >= 16 and <= 31,
+            192 => bytes[1] == 168,
+            169 => bytes[1] == 254,
+            _ => false,
+        };
+    }
+
     public override string ToString() => Text;
 
     private static bool HasSamePrefix(byte[] left, byte[] right, int prefixLength)

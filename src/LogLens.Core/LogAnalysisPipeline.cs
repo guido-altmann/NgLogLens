@@ -1,5 +1,6 @@
 using LogLens.Core.Aggregation;
 using LogLens.Core.Classification;
+using LogLens.Core.Findings;
 using LogLens.Core.Models;
 using LogLens.Core.Parsing;
 
@@ -26,13 +27,14 @@ public sealed record AnalysisProgress(AnalysisStage Stage, int Done, int Total, 
 }
 
 /// <summary>
-/// Fassade über die vier Stufen Parse → Dedupe → Classify → Aggregate (CLAUDE.md).
+/// Fassade über die Stufen Parse → Dedupe → Classify → Aggregate → Findings (CLAUDE.md).
 /// Die Oberfläche kennt nur diese Klasse; jede Stufe bleibt einzeln testbar.
 /// </summary>
 public sealed class LogAnalysisPipeline(
     LogParseService parser,
     TrafficClassifier classifier,
-    AnalysisAggregator aggregator)
+    AnalysisAggregator aggregator,
+    FindingEvaluator findings)
 {
     public Task<AnalysisResult> AnalyzeAsync(
         LogFileSource file,
@@ -66,10 +68,48 @@ public sealed class LogAnalysisPipeline(
         await Task.Yield();
         cancellationToken.ThrowIfCancellationRequested();
 
-        var result = aggregator.Aggregate(
+        var aggregated = aggregator.Aggregate(
             [.. files.Select(f => f.Name)],
             parsed,
             classified);
+
+        var result = aggregated with { Findings = findings.Evaluate(aggregated) };
+
+        progress?.Report(new AnalysisProgress(AnalysisStage.Done, result.Requests, result.Requests, null));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Auswertung mit geänderten Einstellungen wiederholen (SPEC 8.9). Es wird nicht
+    /// neu eingelesen: die Zeilen stecken bereits als <see cref="AccessEntry"/> im
+    /// Speicher, und die Datei selbst ist längst wieder zu (CLAUDE.md, Datenschutz).
+    /// </summary>
+    /// <param name="previous">Eine uneingeschränkte Auswertung, kein Zeitraum-Ausschnitt.</param>
+    public async Task<AnalysisResult> ReanalyzeAsync(
+        AnalysisResult previous,
+        IProgress<AnalysisProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(previous);
+
+        var parsed = new ParseResult(
+            [.. previous.Entries.Select(e => e.Entry)],
+            previous.ErrorEntries,
+            previous.Diagnostics);
+
+        var classified = await classifier.ClassifyAsync(
+            parsed,
+            Relay<ClassifyProgress>(progress, p =>
+                new AnalysisProgress(AnalysisStage.Classifying, p.EntriesDone, p.EntriesTotal, null)),
+            cancellationToken).ConfigureAwait(false);
+
+        progress?.Report(new AnalysisProgress(AnalysisStage.Aggregating, 0, 0, null));
+        await Task.Yield();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var aggregated = aggregator.Aggregate(previous.FileNames, parsed, classified);
+        var result = aggregated with { Findings = findings.Evaluate(aggregated) };
 
         progress?.Report(new AnalysisProgress(AnalysisStage.Done, result.Requests, result.Requests, null));
 

@@ -68,7 +68,7 @@ public sealed class TrafficClassifier(
 
         progress?.Report(new ClassifyProgress(entries.Count, entries.Count));
 
-        var scanners = BuildScanners(classified, scannerIps, attacksPerIp);
+        var scanners = ScannerList.Build(classified, scannerIps, attackPatterns.ReconnaissanceCategory);
 
         return new ClassificationResult(classified, scanners, scannerIps, monitoringIps);
     }
@@ -193,48 +193,6 @@ public sealed class TrafficClassifier(
             IsPageView: PagePath.IsPageView(entry, trafficClass, options),
             IsMonitoringSuspected: monitoringIps.Contains(entry.ClientIp),
             Reason: reason);
-    }
-
-    /// <summary>Top-Scanner für die Angriffsansicht und das Finding „Scan-Bursts" (SPEC 6, 7).</summary>
-    private IReadOnlyList<Scanner> BuildScanners(
-        IReadOnlyList<ClassifiedEntry> entries,
-        HashSet<string> scannerIps,
-        Dictionary<string, int> attacksPerIp)
-    {
-        var scanners = new List<Scanner>(scannerIps.Count);
-
-        foreach (var group in entries
-            .Where(e => scannerIps.Contains(e.ClientIp))
-            .GroupBy(e => e.ClientIp, StringComparer.OrdinalIgnoreCase))
-        {
-            scanners.Add(new Scanner(
-                ClientIp: group.Key,
-                IndividualAttacks: attacksPerIp.GetValueOrDefault(group.Key),
-                Requests: group.Count(),
-                FirstSeen: group.Min(e => e.Timestamp),
-                LastSeen: group.Max(e => e.Timestamp),
-                MainCategory: MainCategory(group)));
-        }
-
-        return [.. scanners.OrderByDescending(s => s.Requests).ThenBy(s => s.ClientIp, StringComparer.Ordinal)];
-    }
-
-    /// <summary>
-    /// Häufigste Kategorie einer Scanner-IP. „Aufklärung" beschreibt nur den Rest der
-    /// Anfragen und kommt deshalb erst zum Zug, wenn es keine andere Kategorie gibt.
-    /// </summary>
-    private string MainCategory(IEnumerable<ClassifiedEntry> entries)
-    {
-        var categories = entries
-            .Select(e => e.AttackCategory)
-            .Where(c => c is not null)
-            .GroupBy(c => c!, StringComparer.Ordinal)
-            .OrderBy(g => g.Key == attackPatterns.ReconnaissanceCategory)
-            .ThenByDescending(g => g.Count())
-            .ThenBy(g => g.Key, StringComparer.Ordinal)
-            .ToList();
-
-        return categories.Count > 0 ? categories[0].Key : attackPatterns.ReconnaissanceCategory;
     }
 
     private bool IsReadMethod(string? method) =>

@@ -140,6 +140,7 @@ public sealed class PatternResourceTests
         Assert.False(string.IsNullOrWhiteSpace(PatternResources.LoadBotPatterns().Updated));
         Assert.False(string.IsNullOrWhiteSpace(PatternResources.LoadAiAgents().Updated));
         Assert.False(string.IsNullOrWhiteSpace(PatternResources.LoadAiIpRanges().Updated));
+        Assert.False(string.IsNullOrWhiteSpace(PatternResources.LoadFindingPatterns().Updated));
     }
 
     [Fact]

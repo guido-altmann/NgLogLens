@@ -40,6 +40,14 @@ internal sealed record AiAgentEntryDocument(
     IReadOnlyList<string>? UserAgentPatterns,
     IReadOnlyList<string>? ContactDomains);
 
+/// <summary>Abbild von <c>Resources/finding-patterns.json</c> (SPEC 7).</summary>
+internal sealed record FindingPatternDocument(
+    string Updated,
+    IReadOnlyList<string> LlmsTxtPaths,
+    string WellKnownPrefix,
+    IReadOnlyList<PathPattern> DotNetConfigPatterns,
+    IReadOnlyList<PathPattern> MissingAssetPatterns);
+
 /// <summary>Abbild von <c>Resources/ai-ip-ranges.json</c> (SPEC 5.5, docs/ip-range-sources.md).</summary>
 internal sealed record AiIpRangeDocument(
     string Updated,
@@ -68,4 +76,5 @@ internal sealed record AiIpRangeProviderDocument(
 [JsonSerializable(typeof(BotPatternDocument))]
 [JsonSerializable(typeof(AiAgentDocument))]
 [JsonSerializable(typeof(AiIpRangeDocument))]
+[JsonSerializable(typeof(FindingPatternDocument))]
 internal sealed partial class PatternJsonContext : JsonSerializerContext;

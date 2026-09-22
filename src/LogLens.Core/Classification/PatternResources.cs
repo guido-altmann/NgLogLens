@@ -23,6 +23,9 @@ public static class PatternResources
     public static AiIpRangeSet LoadAiIpRanges() =>
         new(Read(PatternJsonContext.Default.AiIpRangeDocument, "ai-ip-ranges.json"));
 
+    public static FindingPatternSet LoadFindingPatterns() =>
+        new(Read(PatternJsonContext.Default.FindingPatternDocument, "finding-patterns.json"));
+
     /// <summary>Rohtext einer Musterliste, etwa für Diagnose oder Tests.</summary>
     public static string ReadText(string fileName)
     {
