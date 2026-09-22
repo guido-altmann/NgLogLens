@@ -94,4 +94,13 @@ public sealed class AggregationOptions
 
     /// <summary>Netzgröße für „unterschiedliche Netze" bei IPv6.</summary>
     public int VisitorNetworkIpv6PrefixLength { get; set; } = 48;
+
+    /// <summary>Länge der Top-Listen: Seiten, Referrer, Netze, Seiten je KI-Agent.</summary>
+    public int TopListSize { get; set; } = 20;
+
+    /// <summary>
+    /// Eigene Domains; Referrer von dort zählen nicht als Herkunft (SPEC 6). Subdomains
+    /// gehören dazu. Zusätzlich gelten die Hosts aus den Error-Zeilen des Logs.
+    /// </summary>
+    public IList<string> OwnDomains { get; } = [];
 }

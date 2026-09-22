@@ -90,8 +90,20 @@ internal static class FixtureLog
         var parsed = await ParseAsync().ConfigureAwait(false);
         var classified = await ClassifyAsync().ConfigureAwait(false);
 
-        return new OverviewAggregator(new AggregationOptions())
-            .Aggregate([Name], parsed, classified);
+        return CreateAggregator().Aggregate([Name], parsed, classified);
+    }
+
+    /// <summary>Die Stufe „Aggregate" mit allen Teil-Aggregatoren, ohne DI.</summary>
+    public static AnalysisAggregator CreateAggregator(AggregationOptions? options = null)
+    {
+        options ??= new AggregationOptions();
+
+        return new AnalysisAggregator(
+            options,
+            new VisitorAggregator(options),
+            new AttackAggregator(),
+            new AiAgentAggregator(PatternResources.LoadAiAgents(), options),
+            new ServerHealthAggregator());
     }
 
     /// <summary>Der klassifizierte Eintrag zu einer Zeilennummer aus sample-expected.md.</summary>

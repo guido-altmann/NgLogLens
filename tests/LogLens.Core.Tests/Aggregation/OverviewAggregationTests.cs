@@ -134,7 +134,7 @@ public sealed class OverviewAggregationTests
     [Fact]
     public void Leeres_Log_liefert_ein_leeres_Ergebnis_ohne_Zeitraum()
     {
-        var aggregator = new OverviewAggregator(new AggregationOptions());
+        var aggregator = FixtureLog.CreateAggregator();
 
         var result = aggregator.Aggregate(
             ["leer.log"],

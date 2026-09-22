@@ -41,7 +41,11 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<TrafficClassifier>();
 
         services.TryAddSingleton(new AggregationOptions());
-        services.TryAddSingleton<OverviewAggregator>();
+        services.TryAddSingleton<VisitorAggregator>();
+        services.TryAddSingleton<AttackAggregator>();
+        services.TryAddSingleton<AiAgentAggregator>();
+        services.TryAddSingleton<ServerHealthAggregator>();
+        services.TryAddSingleton<AnalysisAggregator>();
         services.TryAddSingleton<LogAnalysisPipeline>();
 
         return services;

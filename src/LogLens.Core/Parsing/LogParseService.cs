@@ -111,7 +111,20 @@ public sealed class LogParseService(
             UnknownLines: counters.UnknownLines,
             LinesWithoutClientIpHeader: counters.LinesWithoutClientIpHeader,
             UnknownSamples: unknownSamples,
-            Files: fileInfos);
+            Files: fileInfos)
+        {
+            // Vor dem Dedupe einsammeln: das host-Feld steht oft nur in den
+            // 404-Folgefehlern, die gleich danach verschwinden (SPEC 3).
+            RequestedHosts =
+            [
+                .. errorEntries
+                    .Select(e => e.Host)
+                    .OfType<string>()
+                    .Where(h => !string.IsNullOrWhiteSpace(h))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.OrdinalIgnoreCase),
+            ],
+        };
 
         return new ParseResult(accessEntries, dedupe.Kept, diagnostics);
     }

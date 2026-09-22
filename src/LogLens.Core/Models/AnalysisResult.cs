@@ -62,6 +62,22 @@ public sealed record AnalysisResult(
 {
     public IReadOnlyList<ClassifiedEntry> Entries => Classification.Entries;
 
+    /// <summary>Eigene Domains: konfiguriert oder aus den Error-Zeilen erkannt.</summary>
+    public IReadOnlyList<string> OwnDomains { get; init; } = [];
+
+    /// <summary>Besucher-Kennzahlen mit allen Anfragen von Menschen (SPEC 8.3).</summary>
+    public VisitorStatistics Visitors { get; init; } = VisitorStatistics.Empty;
+
+    /// <summary>Besucher-Kennzahlen ohne Anfragen mit Monitoring-Verdacht (SPEC 5.8).</summary>
+    public VisitorStatistics VisitorsWithoutMonitoring { get; init; } = VisitorStatistics.Empty;
+
+    public AttackStatistics Attacks { get; init; } = AttackStatistics.Empty;
+
+    /// <summary>KI-Agenten, meiste Anfragen zuerst (SPEC 8.5).</summary>
+    public IReadOnlyList<AiAgentStatistics> AiAgents { get; init; } = [];
+
+    public ServerHealthStatistics ServerHealth { get; init; } = ServerHealthStatistics.Empty;
+
     public IReadOnlyList<Scanner> Scanners => Classification.Scanners;
 
     /// <summary>Anfragen insgesamt: vollständige und gekürzte Access-Zeilen (SPEC 3).</summary>
@@ -88,4 +104,7 @@ public sealed record AnalysisResult(
 
     public int VisitorNetworksFor(bool excludeMonitoring) =>
         excludeMonitoring ? VisitorNetworksWithoutMonitoring : VisitorNetworks;
+
+    public VisitorStatistics VisitorsFor(bool excludeMonitoring) =>
+        excludeMonitoring ? VisitorsWithoutMonitoring : Visitors;
 }

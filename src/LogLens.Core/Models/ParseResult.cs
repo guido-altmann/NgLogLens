@@ -26,6 +26,12 @@ public sealed record ParseDiagnostics(
 
     /// <summary>Anfragen insgesamt: vollständige und gekürzte Access-Zeilen (SPEC 3).</summary>
     public int Requests => AccessLines + TruncatedAccessLines;
+
+    /// <summary>
+    /// Hosts aus dem <c>host:</c>-Feld aller Error-Zeilen, auch der aussortierten.
+    /// Daraus ergibt sich die eigene Domain für die Referrer-Statistik (SPEC 6).
+    /// </summary>
+    public IReadOnlyList<string> RequestedHosts { get; init; } = [];
 }
 
 /// <summary>Ergebnis der Stufen Parse und Dedupe.</summary>

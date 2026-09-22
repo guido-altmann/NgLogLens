@@ -57,6 +57,16 @@ public sealed class LogParseServiceTests
     }
 
     [Fact]
+    public async Task Hosts_der_Error_Zeilen_bleiben_trotz_Dedupe_erhalten()
+    {
+        var result = await FixtureLog.ParseAsync(TestContext.Current.CancellationToken);
+
+        // Das host-Feld steht nur in den Folgefehlern der Zeilen 2 und 4.
+        Assert.Single(result.ErrorEntries);
+        Assert.Equal(["example.de"], result.Diagnostics.RequestedHosts);
+    }
+
+    [Fact]
     public async Task Fortschritt_wird_gemeldet()
     {
         var reports = new List<ParseProgress>();

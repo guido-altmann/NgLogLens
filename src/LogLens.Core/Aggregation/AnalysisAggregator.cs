@@ -6,10 +6,15 @@ namespace LogLens.Core.Aggregation;
 
 /// <summary>
 /// Stufe „Aggregate" der Pipeline (SPEC 6). Arbeitet auf der klassifizierten Liste im
-/// Speicher und liefert die Kennzahlen, die die Übersicht braucht. Top-Listen und
-/// Detail-Kennzahlen der Unterseiten kommen in M5 dazu.
+/// Speicher: die Kennzahlen der Übersicht rechnet sie selbst, die der Detailseiten
+/// die Teil-Aggregatoren, die jeder für sich testbar bleiben.
 /// </summary>
-public sealed class OverviewAggregator(AggregationOptions options)
+public sealed class AnalysisAggregator(
+    AggregationOptions options,
+    VisitorAggregator visitors,
+    AttackAggregator attacks,
+    AiAgentAggregator aiAgents,
+    ServerHealthAggregator serverHealth)
 {
     public AnalysisResult Aggregate(
         IReadOnlyList<string> fileNames,
@@ -67,6 +72,7 @@ public sealed class OverviewAggregator(AggregationOptions options)
         }
 
         var (daily, daysWithoutEntries) = BuildDailySeries(period, perDay);
+        var ownDomains = OwnDomains(parseResult.Diagnostics.RequestedHosts);
 
         return new AnalysisResult(
             FileNames: fileNames,
@@ -80,7 +86,63 @@ public sealed class OverviewAggregator(AggregationOptions options)
             PageViews: pageViews,
             PageViewsWithoutMonitoring: pageViewsWithoutMonitoring,
             VisitorNetworks: networks.Count,
-            VisitorNetworksWithoutMonitoring: networksWithoutMonitoring.Count);
+            VisitorNetworksWithoutMonitoring: networksWithoutMonitoring.Count)
+        {
+            OwnDomains = ownDomains,
+            Visitors = visitors.Aggregate(entries, excludeMonitoring: false, ownDomains),
+            VisitorsWithoutMonitoring = visitors.Aggregate(entries, excludeMonitoring: true, ownDomains),
+            Attacks = attacks.Aggregate(entries, classification.ScannerIps),
+            AiAgents = aiAgents.Aggregate(entries),
+            ServerHealth = serverHealth.Aggregate(entries, parseResult.ErrorEntries),
+        };
+    }
+
+    /// <summary>
+    /// Eigene Domains: die konfigurierten plus die Hosts aus den Error-Zeilen. nginx
+    /// schreibt dort den angefragten Host hinein, und der ist die eigene Seite.
+    /// </summary>
+    private IReadOnlyList<string> OwnDomains(IReadOnlyList<string> requestedHosts)
+    {
+        var domains = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var domain in options.OwnDomains)
+        {
+            AddDomain(domains, domain);
+        }
+
+        foreach (var host in requestedHosts)
+        {
+            AddDomain(domains, host);
+        }
+
+        return [.. domains];
+    }
+
+    private static void AddDomain(SortedSet<string> domains, string? host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return;
+        }
+
+        var value = host.Trim().ToLowerInvariant();
+
+        // Port und führendes www. gehören nicht zur Domain; IP-Adressen sind keine.
+        var colon = value.LastIndexOf(':');
+        if (colon > 0 && value.IndexOf(':') == colon)
+        {
+            value = value[..colon];
+        }
+
+        if (value.StartsWith("www.", StringComparison.Ordinal))
+        {
+            value = value[4..];
+        }
+
+        if (value.Length > 0 && !IPAddress.TryParse(value, out _))
+        {
+            domains.Add(value);
+        }
     }
 
     private static readonly TrafficClass[] ClassOrder =

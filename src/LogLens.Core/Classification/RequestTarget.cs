@@ -17,8 +17,8 @@ public readonly struct RequestTarget
         Path = path;
         Query = query;
 
-        var decodedPath = Decode(path);
-        var decodedQuery = Decode(query);
+        var decodedPath = UrlText.Decode(path);
+        var decodedQuery = UrlText.Decode(query);
 
         _pathValues = string.Equals(decodedPath, path, StringComparison.Ordinal)
             ? [path]
@@ -63,26 +63,5 @@ public readonly struct RequestTarget
 
         matched = null;
         return false;
-    }
-
-    /// <summary>
-    /// Prozentkodierung auflösen. Ungültige Sequenzen bleiben stehen, statt die
-    /// Klassifizierung einer einzelnen Zeile scheitern zu lassen.
-    /// </summary>
-    private static string? Decode(string? value)
-    {
-        if (string.IsNullOrEmpty(value) || value.IndexOf('%') < 0)
-        {
-            return value;
-        }
-
-        try
-        {
-            return Uri.UnescapeDataString(value);
-        }
-        catch (UriFormatException)
-        {
-            return value;
-        }
     }
 }

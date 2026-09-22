@@ -32,7 +32,7 @@ public sealed record AnalysisProgress(AnalysisStage Stage, int Done, int Total, 
 public sealed class LogAnalysisPipeline(
     LogParseService parser,
     TrafficClassifier classifier,
-    OverviewAggregator aggregator)
+    AnalysisAggregator aggregator)
 {
     public Task<AnalysisResult> AnalyzeAsync(
         LogFileSource file,
