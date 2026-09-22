@@ -1,4 +1,4 @@
-# LogLens
+# NgLogLens
 
 Blazor-WebAssembly-App zum Öffnen, Bereinigen und Auswerten von nginx-Logs
 (Coolify/Traefik-Export). Die Logdatei wird ausschließlich im Browser verarbeitet.
