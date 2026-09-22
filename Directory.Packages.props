@@ -13,6 +13,7 @@
 
   <ItemGroup Label="UI">
     <PackageVersion Include="MudBlazor" Version="9.10.0" />
+    <PackageVersion Include="Blazor-ApexCharts" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

@@ -1,3 +1,4 @@
+using LogLens.Core.Aggregation;
 using LogLens.Core.Classification;
 using LogLens.Core.Parsing;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,10 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(_ => PatternResources.LoadAiIpRanges());
         services.TryAddSingleton<MonitoringDetector>();
         services.TryAddSingleton<TrafficClassifier>();
+
+        services.TryAddSingleton(new AggregationOptions());
+        services.TryAddSingleton<OverviewAggregator>();
+        services.TryAddSingleton<LogAnalysisPipeline>();
 
         return services;
     }

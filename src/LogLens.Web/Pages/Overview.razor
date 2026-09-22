@@ -1,5 +1,143 @@
 @page "/overview"
 
-@using LogLens.Web.Shared
+@* ApexCharts bringt eigene Size-, Color- und Align-Typen mit; die MudBlazor-Pendants
+   stehen in dieser Datei deshalb voll qualifiziert. *@
+@using ApexCharts
+@using LogLens.Core.Models
+@using LogLens.Web.Charts
 
-<PagePlaceholder Title="Übersicht" Milestone="M4" />
+<PageTitle>Übersicht – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Übersicht</MudText>
+
+@if (Result is null)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="no-data">
+        Es ist noch keine Datei geöffnet.
+        <MudLink Href="/" Class="ml-1">Jetzt eine Logdatei öffnen</MudLink>
+    </MudAlert>
+}
+else if (Result.IsEmpty)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="empty-data">
+        In @FileSummary steht keine einzige Anfrage.
+        @Result.Diagnostics.TotalLines.ToString("N0") Zeilen wurden gelesen,
+        davon @Result.Diagnostics.UnknownLines.ToString("N0") nicht erkannt.
+    </MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1" data-testid="headline">@Headline</MudText>
+    <MudText Typo="Typo.body2" Class="mud-text-secondary mb-6" data-testid="subline">@Subline</MudText>
+
+    <MudGrid Class="mb-6">
+        @foreach (var tile in Tiles)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Outlined="true" Class="pa-4 height-full">
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">@tile.Label</MudText>
+                    <MudText Typo="Typo.h5">@tile.Value</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@tile.Hint</MudText>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <MudPaper Outlined="true" Class="pa-4 mb-6">
+        <MudText Typo="Typo.h6" GutterBottom="true">Anteile der vier Klassen</MudText>
+
+        <ApexChart @key="@($"share-{IsDarkMode}")" TItem="SharePoint"
+                   Options="_shareOptions" Height="110">
+            @foreach (var series in _shareSeries)
+            {
+                <ApexPointSeries TItem="SharePoint"
+                                 Items="@series.Items"
+                                 Name="@series.Style.Label"
+                                 SeriesType="SeriesType.Bar"
+                                 XValue="@(_ => "Anfragen")"
+                                 YValue="@(p => p.Requests)" />
+            }
+        </ApexChart>
+
+        @* Legende mit Zahlen: die Klasse ist nie nur an der Farbe erkennbar (SPEC 9). *@
+        <div class="d-flex flex-wrap gap-4 mt-2" data-testid="class-legend">
+            @foreach (var item in Result.Classes)
+            {
+                var style = TrafficClassStyles.For(item.Class);
+                <div class="d-flex align-center gap-2">
+                    <span class="legend-dot" style="background-color:@style.ColorFor(IsDarkMode);"></span>
+                    <MudText Typo="Typo.body2">
+                        <strong>@style.Label</strong>
+                        @item.Requests.ToString("N0") (@item.Share.ToString("P1"))
+                    </MudText>
+                </div>
+            }
+        </div>
+    </MudPaper>
+
+    <MudPaper Outlined="true" Class="pa-4">
+        <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
+            <MudText Typo="Typo.h6">Tagesverlauf</MudText>
+
+            <MudToggleGroup T="DailyView" Value="_dailyView" ValueChanged="SetDailyView"
+                            Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" CheckMark="true"
+                            SelectionMode="SelectionMode.SingleSelection"
+                            aria-label="Auswahl der gezeigten Klassen">
+                <MudToggleItem T="DailyView" Value="DailyView.All" Text="Alle" />
+                <MudToggleItem T="DailyView" Value="DailyView.WithoutAttacks" Text="Ohne Angriffe" />
+                <MudToggleItem T="DailyView" Value="DailyView.HumansOnly" Text="Nur Menschen" />
+            </MudToggleGroup>
+        </div>
+
+        <ApexChart @key="@($"daily-{IsDarkMode}-{_dailyView}")" TItem="DailyTraffic"
+                   Options="_dailyOptions" Height="340">
+            @foreach (var trafficClass in VisibleClasses)
+            {
+                <ApexPointSeries TItem="DailyTraffic"
+                                 Items="@Result.Daily"
+                                 Name="@TrafficClassStyles.Label(trafficClass)"
+                                 SeriesType="SeriesType.Bar"
+                                 XValue="@(d => d.Day.ToString("dd.MM."))"
+                                 YValue="@(d => d.Of(trafficClass))" />
+            }
+        </ApexChart>
+
+        <MudExpansionPanels Elevation="0" Class="mt-2">
+            <MudExpansionPanel Text="Zahlen als Tabelle" data-testid="daily-table-panel">
+                <MudSimpleTable Dense="true" Striped="true" Elevation="0" Style="max-height:24rem;overflow:auto;">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tag</th>
+                            @foreach (var trafficClass in VisibleClasses)
+                            {
+                                <th scope="col" class="text-right">@TrafficClassStyles.Label(trafficClass)</th>
+                            }
+                            <th scope="col" class="text-right">Summe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var day in Result.Daily)
+                        {
+                            <tr>
+                                <th scope="row">@day.Day.ToString("dd.MM.yyyy")</th>
+                                @foreach (var trafficClass in VisibleClasses)
+                                {
+                                    <td class="text-right">@day.Of(trafficClass).ToString("N0")</td>
+                                }
+                                <td class="text-right">@VisibleTotal(day).ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+
+        @if (Result.DaysWithoutEntries.Count > 0)
+        {
+            <MudText Typo="Typo.caption" Class="mud-text-secondary mt-2" data-testid="empty-days">
+                @Result.DaysWithoutEntries.Count.ToString("N0") Tage im Zeitraum haben keinen einzigen Eintrag.
+                Das kann an Ausfällen liegen oder an Lücken im Export.
+            </MudText>
+        }
+    </MudPaper>
+}

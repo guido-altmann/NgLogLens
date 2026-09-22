@@ -22,7 +22,10 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
-            @Body
+            @* Diagramme brauchen je Modus eigene Farben, keine Umkehrung (SPEC 9). *@
+            <CascadingValue Name="IsDarkMode" Value="_isDarkMode">
+                @Body
+            </CascadingValue>
         </MudContainer>
     </MudMainContent>
 </MudLayout>

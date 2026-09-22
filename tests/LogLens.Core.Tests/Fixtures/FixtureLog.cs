@@ -1,4 +1,5 @@
 using LogLens.Core;
+using LogLens.Core.Aggregation;
 using LogLens.Core.Classification;
 using LogLens.Core.Models;
 using LogLens.Core.Parsing;
@@ -73,6 +74,24 @@ internal static class FixtureLog
 
         var parsed = await ParseAsync().ConfigureAwait(false);
         return await classifier.ClassifyAsync(parsed).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Parsen, Klassifizieren und Aggregieren der Fixture – wie die Oberfläche es tut,
+    /// aber mit den IP-Bereichen aus <see cref="TestIpRanges"/>.
+    /// </summary>
+    public static Task<AnalysisResult> AnalyzeAsync(CancellationToken cancellationToken = default)
+        => Analyzed.Value.WaitAsync(cancellationToken);
+
+    private static readonly Lazy<Task<AnalysisResult>> Analyzed = new(RunAnalysisAsync);
+
+    private static async Task<AnalysisResult> RunAnalysisAsync()
+    {
+        var parsed = await ParseAsync().ConfigureAwait(false);
+        var classified = await ClassifyAsync().ConfigureAwait(false);
+
+        return new OverviewAggregator(new AggregationOptions())
+            .Aggregate([Name], parsed, classified);
     }
 
     /// <summary>Der klassifizierte Eintrag zu einer Zeilennummer aus sample-expected.md.</summary>

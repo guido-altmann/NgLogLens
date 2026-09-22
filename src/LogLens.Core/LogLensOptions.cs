@@ -18,6 +18,15 @@ public sealed class ParserOptions
     public long MaxFileSizeBytes { get; set; } = 200L * 1024 * 1024;
 
     /// <summary>
+    /// Lesepuffer des <see cref="StreamReader"/>. Im Browser ist jeder Lesezugriff ein
+    /// JS-Interop-Aufruf, deshalb deutlich größer als der .NET-Standard von 1 KB.
+    /// </summary>
+    public int ReadBufferSizeBytes { get; set; } = 64 * 1024;
+
+    /// <summary>Höchstzahl Dateien, die in einem Rutsch geöffnet werden (SPEC 8.1).</summary>
+    public int MaxFileCount { get; set; } = 20;
+
+    /// <summary>
     /// Dateiname der Fehlerseite. Error-Zeilen „open() …/&lt;Name&gt; failed" sind
     /// Folgefehler eines 404 und werden aussortiert (SPEC 3).
     /// </summary>
@@ -72,4 +81,17 @@ public sealed class ClassificationOptions
 
     /// <summary>Vom Nutzer als eigenes Monitoring markierte IPs oder Netze (SPEC 5.8).</summary>
     public IList<string> MonitoringNetworks { get; } = [];
+}
+
+/// <summary>
+/// Stellschrauben der Aggregation (SPEC 6). Die Netzgrößen sind dieselben wie bei der
+/// IP-Maskierung in der Oberfläche (CLAUDE.md, Datenschutz): /24 für IPv4, /48 für IPv6.
+/// </summary>
+public sealed class AggregationOptions
+{
+    /// <summary>Netzgröße für „unterschiedliche Netze" bei IPv4.</summary>
+    public int VisitorNetworkIpv4PrefixLength { get; set; } = 24;
+
+    /// <summary>Netzgröße für „unterschiedliche Netze" bei IPv6.</summary>
+    public int VisitorNetworkIpv6PrefixLength { get; set; } = 48;
 }

@@ -31,3 +31,69 @@ html, body {
     right: 0.8rem;
     top: 0.6rem;
 }
+
+/* Ablagefläche der Upload-Seite (SPEC 8.1).
+
+   Das <input type="file"> liegt unsichtbar über der Fläche: auf ihm sitzen die
+   Drag-Handler von MudFileUpload, und es fängt zugleich den Klick ab. Der
+   Wrapper braucht dafür einen Positionierungskontext – die inneren Container
+   von MudBlazor sind display:contents und taugen nicht dazu. */
+.drop-zone-host {
+    position: relative;
+}
+
+.drop-zone-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 2;
+}
+
+.drop-zone-input:not(:disabled) {
+    cursor: pointer;
+}
+
+.drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 15rem;
+    border-style: dashed !important;
+    border-width: 2px !important;
+    transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+/* Während ein Drag läuft (über @bind-Dragging gesetzt). */
+.drop-zone-active {
+    border-color: var(--mud-palette-primary) !important;
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+/* Der Mauszeiger liegt über dem unsichtbaren Feld, nicht über der Fläche –
+   die Rückmeldung muss deshalb vom Geschwisterelement ausgehen. */
+.drop-zone-input:not(:disabled):hover + * .drop-zone,
+.drop-zone-input:not(:disabled):focus-visible + * .drop-zone {
+    border-color: var(--mud-palette-primary) !important;
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+/* Farbpunkt der Diagramm-Legende; die Beschriftung daneben trägt die Aussage. */
+.legend-dot {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 0.25rem;
+    flex: 0 0 auto;
+}
+
+.height-full {
+    height: 100%;
+}
+
+.width-full {
+    width: 100%;
+}

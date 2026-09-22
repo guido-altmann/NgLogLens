@@ -15,8 +15,8 @@ Die fachliche Spezifikation steht in [docs/SPEC.md](docs/SPEC.md).
 |---|---|---|
 | M1 | Solution, Projekte, DI, MudBlazor-Layout mit leeren Seiten | fertig |
 | M2 | Parser für Access-, Error-, gekürzte und unbekannte Zeilen, Dedupe | fertig |
-| M3 | Klassifizierung | offen |
-| M4 | Upload und Übersicht | offen |
+| M3 | Klassifizierung | fertig |
+| M4 | Upload und Übersicht | fertig |
 | M5 | Detailseiten | offen |
 | M6 | Findings und Einstellungen | offen |
 | M7 | Feinschliff | offen |

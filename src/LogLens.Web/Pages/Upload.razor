@@ -1,5 +1,130 @@
 @page "/"
 
-@using LogLens.Web.Shared
+@using LogLens.Core.Models
 
-<PagePlaceholder Title="Datei öffnen" Milestone="M4" />
+<PageTitle>Datei öffnen – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Datei öffnen</MudText>
+
+<MudText Typo="Typo.body1" Class="mud-text-secondary mb-4">
+    nginx-Log aus einem Coolify- oder Traefik-Export. Access- und Error-Zeilen dürfen
+    gemischt sein, gekürzte Zeilen sind kein Problem.
+</MudText>
+
+<MudAlert Severity="Severity.Success" Variant="Variant.Outlined"
+          Icon="@Icons.Material.Outlined.Lock" Class="mb-6" data-testid="privacy-hint">
+    <strong>Die Datei verlässt deinen Browser nicht.</strong>
+    LogLens hat kein Backend: Einlesen, Auswerten und Anzeigen passieren vollständig auf
+    diesem Gerät. Nichts wird hochgeladen, nichts gespeichert.
+</MudAlert>
+
+@* Das Dateifeld liegt unsichtbar über der Ablagefläche und fängt Klick wie Drop ab.
+   Hidden="false" ist dafür Pflicht: ein Feld mit hidden-Attribut bekommt keine
+   Drag-Events, und genau auf ihm sitzen die Handler von MudFileUpload.
+   tabindex="-1" hält es aus der Tab-Reihenfolge – dort steht der sichtbare Knopf. *@
+<MudFileUpload @ref="_fileUpload" T="IReadOnlyList<IBrowserFile>"
+               FilesChanged="OnFilesSelectedAsync"
+               Accept="@AcceptedFileTypes"
+               DragAndDrop="true"
+               Hidden="false"
+               InputClass="drop-zone-input"
+               @bind-Dragging="_dragging"
+               MaximumFileCount="@ParserOptions.MaxFileCount"
+               Disabled="@IsRunning"
+               Class="drop-zone-host width-full"
+               tabindex="-1"
+               aria-label="Logdatei auswählen">
+    <CustomContent Context="upload">
+        <MudPaper Outlined="true" Class="@DropZoneClass" data-testid="drop-zone">
+            <MudIcon Icon="@Icons.Material.Outlined.CloudUpload" Size="Size.Large" Color="Color.Primary" />
+            <MudText Typo="Typo.h6" Class="mt-2">Logdatei hierher ziehen</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary my-1">oder</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Outlined.FolderOpen"
+                       Disabled="@IsRunning"
+                       OnClick="@(() => upload.OpenFilePickerAsync())"
+                       data-testid="pick-file">
+                Datei auswählen
+            </MudButton>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary mt-3">
+                Mehrere Dateien möglich (werden zusammengeführt), bis @MaxFileSizeText je Datei.
+            </MudText>
+        </MudPaper>
+    </CustomContent>
+</MudFileUpload>
+
+@if (IsRunning)
+{
+    <MudPaper Outlined="true" Class="pa-4 mt-4" data-testid="progress">
+        <MudText Typo="Typo.subtitle1">@StageText</MudText>
+
+        <MudProgressLinear Color="Color.Primary" Class="my-3" Size="Size.Large"
+                           Indeterminate="@IsIndeterminate" Value="@ProgressPercent"
+                           aria-label="Fortschritt der Auswertung" />
+
+        <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+            <MudText Typo="Typo.body2" class="mud-text-secondary" data-testid="progress-detail">
+                @ProgressDetail
+            </MudText>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                       StartIcon="@Icons.Material.Outlined.Cancel"
+                       OnClick="Cancel" data-testid="cancel">
+                Abbrechen
+            </MudButton>
+        </div>
+    </MudPaper>
+}
+
+@if (_cancelled)
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4" data-testid="cancelled">
+        Die Auswertung wurde abgebrochen. Es wurde nichts gespeichert.
+    </MudAlert>
+}
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4" data-testid="error">@_error</MudAlert>
+}
+
+@if (!IsRunning && State.Result is { } result)
+{
+    <MudPaper Outlined="true" Class="pa-4 mt-4" data-testid="summary">
+        <MudText Typo="Typo.h6" GutterBottom="true">@FileSummary</MudText>
+
+        <MudText Typo="Typo.body1" data-testid="summary-sentence">@Summary(result)</MudText>
+
+        <MudSimpleTable Dense="true" Hover="false" Elevation="0" Class="mt-3">
+            <tbody>
+                <tr>
+                    <td>Zeilen gelesen</td>
+                    <td class="text-right">@result.Diagnostics.TotalLines.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>Anfragen</td>
+                    <td class="text-right">@result.Requests.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>Error-Zeilen (ohne 404-Folgefehler)</td>
+                    <td class="text-right">@result.ErrorEntries.Count.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>Gekürzte Zeilen</td>
+                    <td class="text-right">
+                        @((result.Diagnostics.TruncatedAccessLines + result.Diagnostics.TruncatedErrorLines).ToString("N0"))
+                    </td>
+                </tr>
+                <tr>
+                    <td>Nicht erkannte Zeilen</td>
+                    <td class="text-right">@result.Diagnostics.UnknownLines.ToString("N0")</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4"
+                   EndIcon="@Icons.Material.Outlined.ArrowForward"
+                   Href="/overview" data-testid="to-overview">
+            Zur Übersicht
+        </MudButton>
+    </MudPaper>
+}
