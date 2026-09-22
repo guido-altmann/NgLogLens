@@ -1,0 +1,35 @@
+{
+  "updated": "2026-09-22",
+  "note": "KI-Agenten nach docs/SPEC.md 5.5. Erkannt wird in zwei Durchläufen: zuerst über 'userAgentPatterns' (Teilzeichenkette, ohne Beachtung der Groß-/Kleinschreibung), danach – nur wenn kein User-Agent-Muster passt – über 'contactDomains'. Der zweite Durchlauf ist für gekürzte Zeilen gedacht, in denen nur noch die Kontaktdomain lesbar ist (SPEC 2.3); dort ist der Agent nicht mehr unterscheidbar, deshalb steht je Anbieter der Haupt-Crawler zuerst. 'provider' verweist auf einen Eintrag in ai-ip-ranges.json.",
+
+  "agents": [
+    { "name": "ClaudeBot", "provider": "Anthropic", "userAgentPatterns": ["ClaudeBot"], "contactDomains": ["anthropic.com"] },
+    { "name": "Claude-User", "provider": "Anthropic", "userAgentPatterns": ["Claude-User"] },
+    { "name": "Claude-SearchBot", "provider": "Anthropic", "userAgentPatterns": ["Claude-SearchBot"] },
+
+    { "name": "GPTBot", "provider": "OpenAI", "userAgentPatterns": ["GPTBot"], "contactDomains": ["openai.com"] },
+    { "name": "OAI-SearchBot", "provider": "OpenAI", "userAgentPatterns": ["OAI-SearchBot"] },
+    { "name": "ChatGPT-User", "provider": "OpenAI", "userAgentPatterns": ["ChatGPT-User"] },
+
+    { "name": "PerplexityBot", "provider": "Perplexity", "userAgentPatterns": ["PerplexityBot"], "contactDomains": ["perplexity.ai"] },
+    { "name": "Perplexity-User", "provider": "Perplexity", "userAgentPatterns": ["Perplexity-User"] },
+
+    { "name": "Google-Extended", "provider": "Google", "userAgentPatterns": ["Google-Extended"] },
+    { "name": "Google-CloudVertexBot", "provider": "Google", "userAgentPatterns": ["Google-CloudVertexBot"] },
+
+    { "name": "Applebot-Extended", "provider": "Apple", "userAgentPatterns": ["Applebot-Extended"] },
+    { "name": "Applebot", "provider": "Apple", "userAgentPatterns": ["Applebot"], "contactDomains": ["applebot.apple.com"] },
+
+    { "name": "Bytespider", "provider": "ByteDance", "userAgentPatterns": ["Bytespider"], "contactDomains": ["bytedance.com"] },
+    { "name": "meta-externalagent", "provider": "Meta", "userAgentPatterns": ["meta-externalagent"] },
+    { "name": "meta-externalfetcher", "provider": "Meta", "userAgentPatterns": ["meta-externalfetcher"] },
+    { "name": "CCBot", "provider": "Common Crawl", "userAgentPatterns": ["CCBot"], "contactDomains": ["commoncrawl.org"] },
+    { "name": "Amazonbot", "provider": "Amazon", "userAgentPatterns": ["Amazonbot"], "contactDomains": ["crawl.amazonbot.amazon"] },
+
+    { "name": "MistralAI-User", "provider": "Mistral", "userAgentPatterns": ["MistralAI-User"] },
+    { "name": "DeepSeekBot", "provider": "DeepSeek", "userAgentPatterns": ["DeepSeekBot"] },
+    { "name": "Cohere-AI", "provider": "Cohere", "userAgentPatterns": ["cohere-ai", "cohere-training-data-crawler"] },
+    { "name": "YouBot", "provider": "You.com", "userAgentPatterns": ["YouBot"] },
+    { "name": "AgentTrustBot", "provider": "AgentTrust", "userAgentPatterns": ["AgentTrustBot"] }
+  ]
+}

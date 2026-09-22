@@ -1,3 +1,4 @@
+using LogLens.Core.Classification;
 using LogLens.Core.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,6 +29,15 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<LogLineParserChain>();
         services.TryAddSingleton<ErrorLineDeduplicator>();
         services.TryAddSingleton<LogParseService>();
+
+        // Musterlisten einmal aus den eingebetteten Ressourcen lesen (SPEC 5.3–5.6).
+        services.TryAddSingleton(new ClassificationOptions());
+        services.TryAddSingleton(_ => PatternResources.LoadAttackPatterns());
+        services.TryAddSingleton(_ => PatternResources.LoadBotPatterns());
+        services.TryAddSingleton(_ => PatternResources.LoadAiAgents());
+        services.TryAddSingleton(_ => PatternResources.LoadAiIpRanges());
+        services.TryAddSingleton<MonitoringDetector>();
+        services.TryAddSingleton<TrafficClassifier>();
 
         return services;
     }

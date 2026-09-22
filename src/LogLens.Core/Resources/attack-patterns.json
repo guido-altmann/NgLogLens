@@ -1,0 +1,82 @@
+{
+  "updated": "2026-09-22",
+  "note": "Angriffsmuster und Kategorien nach docs/SPEC.md 5.1, 5.3 und 5.4. Die Reihenfolge der Kategorien ist verbindlich: die erste passende gewinnt. Muster sind Teilzeichenketten (ohne Regex) und werden ohne Beachtung der Groß-/Kleinschreibung gegen Pfad und Query geprüft, jeweils im Rohzustand und URL-dekodiert. Ein Muster als Objekt verknüpft seine Bedingungen mit UND; 'rootOnly' verlangt einen Pfad mit nur einem Segment.",
+
+  "agentDiscoveryPaths": [
+    "/llms.txt",
+    "/llms-full.txt",
+    "/.well-known/agents.json",
+    "/.well-known/agent-card.json",
+    "/.well-known/mcp/server-card.json",
+    "/.well-known/ai-plugin.json"
+  ],
+
+  "reconnaissanceCategory": "Aufklärung",
+  "fallbackCategory": "Sonstige Proben",
+
+  "categories": [
+    {
+      "name": "POST-Proben & Login-Versuche",
+      "appliesToNonReadMethods": true,
+      "pathPatterns": ["/signin", "/signup", "/account", "/login"]
+    },
+    {
+      "name": "WordPress",
+      "pathPatterns": ["wp-", "wordpress", "xmlrpc", "rest_route"],
+      "queryPatterns": ["rest_route"]
+    },
+    {
+      "name": "Vite-Dev-Server",
+      "pathPatterns": ["/@fs/", "/@vite/"]
+    },
+    {
+      "name": "Secrets & Credentials",
+      "pathPatterns": [
+        ".env",
+        "credentials",
+        "creds",
+        ".aws",
+        ".ssh",
+        ".git",
+        ".svn",
+        ".vscode",
+        "appsettings",
+        "local.settings.json",
+        "web.config",
+        "secrets",
+        "sa.json",
+        "terraform",
+        "rootkey",
+        "firebase",
+        "sftp",
+        "server.key",
+        "id_rsa",
+        "id_dsa",
+        { "contains": "key", "endsWith": ".json" },
+        { "endsWith": ".yml", "rootOnly": true },
+        { "endsWith": ".yaml", "rootOnly": true }
+      ]
+    },
+    {
+      "name": "PHP-Webshells",
+      "pathPatterns": [".php", "phpinfo", "_profiler"]
+    },
+    {
+      "name": "Framework-Endpunkte",
+      "pathPatterns": [
+        "actuator",
+        "_ignition",
+        "telescope",
+        "trace.axd",
+        "elmah.axd",
+        { "endsWith": "/info" }
+      ]
+    },
+    {
+      "name": "Path Traversal & Injection",
+      "injection": true,
+      "pathPatterns": ["..", "%2e%2e", "%2f", "proc/self", "/etc/", "cgi-bin"],
+      "queryPatterns": ["cmd=", "command=", "`", "%60", ";echo", "gscan"]
+    }
+  ]
+}

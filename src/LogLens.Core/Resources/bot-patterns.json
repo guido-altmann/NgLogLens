@@ -1,0 +1,25 @@
+{
+  "updated": "2026-09-22",
+  "note": "Such- und sonstige Bots nach docs/SPEC.md 5.6. Muster sind Teilzeichenketten ohne Beachtung der Groß-/Kleinschreibung, geprüft gegen den User-Agent. KI-Agenten (ai-agents.json) werden vorher erkannt und landen nie hier.",
+
+  "emptyUserAgentIsBot": true,
+
+  "exactUserAgents": ["Mozilla/5.0"],
+
+  "userAgentPatterns": [
+    "bot",
+    "crawl",
+    "spider",
+    "slurp",
+    "preview",
+    "facebookexternalhit",
+    "censys",
+    "curl",
+    "python",
+    "go-http",
+    "wget",
+    "headless",
+    "uptime",
+    "monitor"
+  ]
+}

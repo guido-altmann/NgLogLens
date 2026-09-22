@@ -4,4 +4,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup Label="Musterlisten">
+    <!-- Eingebettet statt zur Laufzeit geladen: die App macht keine HTTP-Aufrufe (SPEC 5.5). -->
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+
 </Project>
