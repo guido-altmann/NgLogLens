@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode"
+                  ObserveSystemDarkModeChange="_followsSystemPreference" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       aria-label="Navigation ein- oder ausblenden" OnClick="ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-2">LogLens</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@DarkModeIcon" Color="Color.Inherit"
+                       aria-label="@DarkModeLabel" OnClick="ToggleDarkMode" />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

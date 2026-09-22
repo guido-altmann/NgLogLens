@@ -1,0 +1,33 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #555;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 0.8rem 1.2rem;
+    background: #ffe0b2;
+    color: #3f2d00;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.25);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.8rem;
+    top: 0.6rem;
+}

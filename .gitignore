@@ -1,1 +1,18 @@
 **/.DS_Store
+
+# Build-Ausgaben
+[Bb]in/
+[Oo]bj/
+publish/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+*.received.*
+TestResults/
+
+# Echte Logs gehören nie ins Repository (CLAUDE.md, Datenschutz).
+# Ausnahme: die anonymisierten Fixtures.
+*.log
+!tests/fixtures/*.log

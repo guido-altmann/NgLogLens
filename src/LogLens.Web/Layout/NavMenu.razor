@@ -1,0 +1,11 @@
+@using LogLens.Web.Navigation
+
+<MudNavMenu aria-label="Hauptnavigation">
+    @foreach (var entry in NavigationEntries.All)
+    {
+        <MudNavLink Href="@entry.Route" Icon="@entry.Icon"
+                    Match="@(entry.Route == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+            @entry.Label
+        </MudNavLink>
+    }
+</MudNavMenu>
