@@ -14,13 +14,13 @@ namespace LogLens.Web.Tests;
 /// </summary>
 public sealed class OverviewTests : MudBlazorTestContext
 {
-    private readonly AnalysisState _state = new();
+    private AnalysisState State => Services.GetRequiredService<AnalysisState>();
 
     public OverviewTests()
     {
         Services.AddLogLensCore();
         Services.AddApexCharts();
-        Services.AddSingleton(_state);
+        Services.AddSingleton<AnalysisState>();
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class OverviewTests : MudBlazorTestContext
     [Fact]
     public async Task Zeigt_Kernaussage_Zeitraum_und_Anteile_der_vier_Klassen()
     {
-        _state.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
+        State.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
 
         var cut = Render<Overview>();
 
@@ -58,7 +58,7 @@ public sealed class OverviewTests : MudBlazorTestContext
     [Fact]
     public async Task Tabellen_Alternative_zeigt_die_lueckenlose_Tagesreihe()
     {
-        _state.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
+        State.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
 
         var cut = Render<Overview>();
 
@@ -74,7 +74,7 @@ public sealed class OverviewTests : MudBlazorTestContext
     [Fact]
     public async Task Umschalter_Nur_Menschen_blendet_die_uebrigen_Klassen_aus()
     {
-        _state.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
+        State.Set(await AnalyzeAsync(Xunit.TestContext.Current.CancellationToken));
 
         var cut = Render<Overview>();
 
@@ -89,7 +89,7 @@ public sealed class OverviewTests : MudBlazorTestContext
     [Fact]
     public async Task Datei_ohne_erkennbare_Anfrage_bekommt_eine_eigene_Meldung()
     {
-        _state.Set(await AnalyzeAsync(
+        State.Set(await AnalyzeAsync(
             "kein Logformat, nur Text", Xunit.TestContext.Current.CancellationToken));
 
         var cut = Render<Overview>();

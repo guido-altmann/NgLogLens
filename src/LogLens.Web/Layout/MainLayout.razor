@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
 
+@using LogLens.Web.Shared
+
 <MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode"
                   ObserveSystemDarkModeChange="_followsSystemPreference" />
 <MudPopoverProvider />
@@ -13,7 +15,8 @@
         <MudText Typo="Typo.h6" Class="ml-2">NgLogLens</MudText>
         <MudText Typo="Typo.body2" Class="ml-2">by Guido Altmann</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@DarkModeIcon" Color="Color.Inherit"
+        <PeriodFilter />
+        <MudIconButton Icon="@DarkModeIcon" Class="ml-2" Color="Color.Inherit"
                        aria-label="@DarkModeLabel" OnClick="ToggleDarkMode" />
     </MudAppBar>
 

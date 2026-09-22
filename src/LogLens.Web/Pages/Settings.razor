@@ -1,5 +1,138 @@
 @page "/settings"
 
-@using LogLens.Web.Shared
+<PageTitle>Einstellungen – LogLens</PageTitle>
 
-<PagePlaceholder Title="Einstellungen" Milestone="M6" />
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Einstellungen</MudText>
+
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Die Einstellungen bleiben in diesem Browser gespeichert. Gespeichert werden nur diese Werte –
+    keine Logzeilen und keine Auswertung.
+</MudText>
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Class="pa-4 height-full" data-testid="section-classification">
+            <MudText Typo="Typo.h6" GutterBottom="true">Einordnung</MudText>
+
+            <MudNumericField T="int" Label="Scanner ab so vielen Einzelangriffen"
+                             Value="_edited.ScannerThreshold"
+                             ValueChanged="@(v => _edited = _edited with { ScannerThreshold = v })"
+                             Min="1" Max="1000" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             HelperText="Alle Anfragen einer solchen IP gelten als Angriff."
+                             data-testid="scanner-threshold" />
+
+            <MudNumericField T="int" Label="Monitoring: Zeitfenster in Sekunden" Class="mt-4"
+                             Value="_edited.MonitoringWindowSeconds"
+                             ValueChanged="@(v => _edited = _edited with { MonitoringWindowSeconds = v })"
+                             Min="1" Max="60" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             HelperText="Abstand, in dem zwei Abrufe als gleichzeitig gelten."
+                             data-testid="monitoring-window" />
+
+            <MudNumericField T="int" Label="Monitoring: Mindestzahl der Zeitpunkte" Class="mt-4"
+                             Value="_edited.MonitoringMinOccurrences"
+                             ValueChanged="@(v => _edited = _edited with { MonitoringMinOccurrences = v })"
+                             Min="1" Max="100" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             HelperText="So oft muss sich das Muster wiederholen."
+                             data-testid="monitoring-occurrences" />
+
+            <MudTextField T="string" Label="Eigenes Monitoring: IPs oder Netze" Class="mt-4"
+                          Value="_monitoringNetworks" ValueChanged="SetNetworks"
+                          Lines="3" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          Placeholder="198.51.100.7&#10;203.0.113.0/24"
+                          Error="@(_invalidNetworks.Count > 0)" ErrorText="@InvalidNetworkText"
+                          HelperText="Eine Angabe je Zeile. Diese Anfragen gelten immer als Monitoring."
+                          data-testid="monitoring-networks" />
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Class="pa-4 height-full" data-testid="section-display">
+            <MudText Typo="Typo.h6" GutterBottom="true">Anzeige</MudText>
+
+            <MudSwitch T="bool" Color="Color.Primary"
+                       Value="_edited.ShowFullVisitorIps"
+                       ValueChanged="@(v => _edited = _edited with { ShowFullVisitorIps = v })"
+                       data-testid="show-full-ips">
+                Besucher-IPs vollständig zeigen
+            </MudSwitch>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mb-2">
+                Standard ist die Kürzung auf /24 bzw. /48. Scanner-IPs stehen immer vollständig da,
+                damit sie in eine Blockliste passen.
+            </MudText>
+
+            <MudSwitch T="bool" Color="Color.Primary" Class="mt-2"
+                       Value="_edited.ExcludeMonitoring"
+                       ValueChanged="@(v => _edited = _edited with { ExcludeMonitoring = v })"
+                       data-testid="exclude-monitoring">
+                Monitoring aus Seitenaufrufen herausrechnen
+            </MudSwitch>
+
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.h6" GutterBottom="true">Empfehlungen</MudText>
+
+            <MudNumericField T="int" Label="Scan-Burst ab so vielen Anfragen"
+                             Value="_edited.ScanBurstRequests"
+                             ValueChanged="@(v => _edited = _edited with { ScanBurstRequests = v })"
+                             Min="1" Max="1000000" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             data-testid="burst-requests" />
+
+            <MudNumericField T="int" Label="… innerhalb von so vielen Minuten" Class="mt-4"
+                             Value="_edited.ScanBurstWindowMinutes"
+                             ValueChanged="@(v => _edited = _edited with { ScanBurstWindowMinutes = v })"
+                             Min="1" Max="1440" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             data-testid="burst-window" />
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Class="pa-4 height-full" data-testid="section-analysis">
+            <MudText Typo="Typo.h6" GutterBottom="true">Auswertung</MudText>
+
+            <MudTextField T="string" Label="Eigene Domains"
+                          Value="_ownDomains" ValueChanged="SetDomains"
+                          Lines="3" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          Placeholder="example.de"
+                          HelperText="Eine je Zeile. Referrer von dort zählen nicht als Herkunft; die Hosts aus den Error-Zeilen kommen automatisch dazu."
+                          data-testid="own-domains" />
+
+            <MudNumericField T="int" Label="Maximale Dateigröße in MB" Class="mt-4"
+                             Value="_edited.MaxFileSizeMegabytes"
+                             ValueChanged="@(v => _edited = _edited with { MaxFileSizeMegabytes = v })"
+                             Min="1" Max="2048" Variant="Variant.Outlined" Margin="Margin.Dense"
+                             HelperText="Gilt beim Öffnen der nächsten Datei."
+                             data-testid="max-file-size" />
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<div class="d-flex align-center flex-wrap gap-2 mt-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Save"
+               Disabled="@(!CanSave)" OnClick="SaveAsync" data-testid="save">Speichern</MudButton>
+    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Outlined.RestartAlt"
+               Disabled="_busy" OnClick="ResetAsync" data-testid="reset">Auf Vorgaben zurücksetzen</MudButton>
+
+    @if (_busy)
+    {
+        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+    }
+    else if (HasChanges)
+    {
+        <MudText Typo="Typo.body2" Class="mud-text-secondary" role="status" data-testid="unsaved">
+            Noch nicht gespeichert.
+        </MudText>
+    }
+</div>
+
+@if (State.HasResult)
+{
+    <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2" data-testid="reanalysis-hint">
+        Schwellwerte, Monitoring-Netze und eigene Domains wirken rückwirkend: die geöffnete Datei wird beim
+        Speichern neu ausgewertet.
+    </MudText>
+}
+
+@code {
+    private string InvalidNetworkText =>
+        $"Keine gültige IP oder CIDR-Angabe: {string.Join(", ", _invalidNetworks)}";
+}

@@ -1,0 +1,19 @@
+@* Globaler Zeitraumfilter (SPEC 8): wirkt auf alle Ansichten. *@
+
+@if (State.Full is { Period: { } period })
+{
+    <div class="d-flex align-center gap-2" data-testid="period-filter">
+        <MudDateRangePicker DateRange="_range" DateRangeChanged="SetRangeAsync"
+                            MinDate="@period.FirstDay.ToDateTime(TimeOnly.MinValue)"
+                            MaxDate="@period.LastDay.ToDateTime(TimeOnly.MinValue)"
+                            Label="Zeitraum (UTC)" Variant="Variant.Outlined" Margin="Margin.Dense"
+                            Clearable="true" Class="period-picker" Style="min-width:230px;"
+                            Color="Color.Inherit" data-testid="period-picker" />
+
+        @if (State.IsRestricted)
+        {
+            <MudIconButton Icon="@Icons.Material.Outlined.FilterAltOff" Color="Color.Inherit" Size="Size.Small"
+                           aria-label="Zeitraumfilter aufheben" OnClick="ResetAsync" data-testid="period-reset" />
+        }
+    </div>
+}

@@ -24,6 +24,7 @@ builder.Services.AddLogLensCore();
 builder.Services.AddSingleton<AnalysisState>();
 builder.Services.AddSingleton<ViewPreferences>();
 builder.Services.AddSingleton<IpDisplay>();
+builder.Services.AddSingleton<SettingsService>();
 builder.Services.AddScoped<FileDownloadService>();
 
 await builder.Build().RunAsync();

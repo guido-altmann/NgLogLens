@@ -4,7 +4,7 @@ Blazor-WebAssembly-Anwendung zum Öffnen, Bereinigen und Auswerten von nginx-Log
 aus einem Coolify-/Traefik-Export.
 
 **Die Logdatei verlässt den Browser nicht.** Es gibt kein Backend, keine Telemetrie
-und keine Analytics. Rohdaten werden nicht gespeichert; persistiert werden später
+und keine Analytics. Rohdaten werden nicht gespeichert; in `localStorage` liegen
 ausschließlich Einstellungen.
 
 Die fachliche Spezifikation steht in [docs/SPEC.md](docs/SPEC.md).
@@ -18,7 +18,7 @@ Die fachliche Spezifikation steht in [docs/SPEC.md](docs/SPEC.md).
 | M3 | Klassifizierung | fertig |
 | M4 | Upload und Übersicht | fertig |
 | M5 | Detailseiten: Besucher, Angriffe mit Export, KI-Agenten, Server-Zustand, Rohdaten | fertig |
-| M6 | Findings und Einstellungen | offen |
+| M6 | Empfehlungen, Einstellungen, globaler Zeitraumfilter | fertig |
 | M7 | Feinschliff | offen |
 
 ## Aufbau

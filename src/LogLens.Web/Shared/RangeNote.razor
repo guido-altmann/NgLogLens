@@ -1,0 +1,25 @@
+@* Hinweis auf den globalen Zeitraumfilter (SPEC 8), sobald er die Zahlen einschränkt. *@
+@using System.Globalization
+@using LogLens.Core.Models
+
+@if (Range is { } range)
+{
+    <MudText Typo="Typo.body2" Class="mud-text-secondary mb-3" role="status" data-testid="range-note">
+        Eingeschränkt auf @RangeText(range) (UTC). Alle Zahlen dieser Seite gelten für diesen Zeitraum.
+    </MudText>
+}
+
+@code {
+    [Parameter] public DayRange? Range { get; set; }
+
+    private static string RangeText(DayRange range) => (range.From, range.To) switch
+    {
+        ({ } from, { } to) when from == to => Day(from),
+        ({ } from, { } to) => $"{Day(from)} bis {Day(to)}",
+        ({ } from, null) => $"ab {Day(from)}",
+        (null, { } to) => $"bis {Day(to)}",
+        _ => "den gewählten Zeitraum",
+    };
+
+    private static string Day(DateOnly day) => day.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture);
+}

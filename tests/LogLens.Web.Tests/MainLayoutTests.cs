@@ -5,6 +5,8 @@ namespace LogLens.Web.Tests;
 
 public sealed class MainLayoutTests : MudBlazorTestContext
 {
+    public MainLayoutTests() => AddAppServices();
+
     [Fact]
     public void MainLayout_rendert_Kopfzeile_und_Inhalt()
     {

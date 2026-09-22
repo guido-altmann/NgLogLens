@@ -5,6 +5,7 @@
 @using ApexCharts
 @using LogLens.Core.Models
 @using LogLens.Web.Charts
+@using LogLens.Web.Shared
 
 <PageTitle>Übersicht – LogLens</PageTitle>
 
@@ -20,13 +21,22 @@
 else if (Result.IsEmpty)
 {
     <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="empty-data">
-        In @FileSummary steht keine einzige Anfrage.
-        @Result.Diagnostics.TotalLines.ToString("N0") Zeilen wurden gelesen,
-        davon @Result.Diagnostics.UnknownLines.ToString("N0") nicht erkannt.
+        @if (Result.Range is null)
+        {
+            @($"In {FileSummary} steht keine einzige Anfrage.")
+            <text> @Result.Diagnostics.TotalLines.ToString("N0") Zeilen wurden gelesen,
+            davon @Result.Diagnostics.UnknownLines.ToString("N0") nicht erkannt.</text>
+        }
+        else
+        {
+            <text>Im gewählten Zeitraum steht keine einzige Anfrage.</text>
+        }
     </MudAlert>
 }
 else
 {
+    <RangeNote Range="Result.Range" />
+
     <MudText Typo="Typo.h5" Class="mb-1" data-testid="headline">@Headline</MudText>
     <MudText Typo="Typo.body2" Class="mud-text-secondary mb-6" data-testid="subline">@Subline</MudText>
 

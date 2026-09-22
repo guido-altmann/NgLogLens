@@ -1,3 +1,5 @@
+using LogLens.Core;
+using LogLens.Web.Services;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 
@@ -12,5 +14,19 @@ public abstract class MudBlazorTestContext : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddMudServices();
+    }
+
+    /// <summary>
+    /// Kern und die Dienste der App, wie <c>Program.cs</c> sie registriert. Für Tests,
+    /// die Layout oder Einstellungen rendern.
+    /// </summary>
+    protected void AddAppServices()
+    {
+        Services.AddLogLensCore();
+        Services.AddSingleton<AnalysisState>();
+        Services.AddSingleton<ViewPreferences>();
+        Services.AddSingleton<IpDisplay>();
+        Services.AddSingleton<SettingsService>();
+        Services.AddScoped<FileDownloadService>();
     }
 }

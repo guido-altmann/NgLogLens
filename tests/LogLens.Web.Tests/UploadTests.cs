@@ -28,12 +28,12 @@ public sealed class UploadTests : MudBlazorTestContext
     /// </summary>
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(30);
 
-    private readonly AnalysisState _state = new();
+    private AnalysisState State => Services.GetRequiredService<AnalysisState>();
 
     public UploadTests()
     {
         Services.AddLogLensCore();
-        Services.AddSingleton(_state);
+        Services.AddSingleton<AnalysisState>();
     }
 
     [Fact]
@@ -141,12 +141,12 @@ public sealed class UploadTests : MudBlazorTestContext
         UploadLog(cut, SampleLog);
         cut.WaitForElement("[data-testid=summary]", Patience);
 
-        Assert.NotNull(_state.Result);
-        Assert.Equal(2, _state.Result.Requests);
-        Assert.Equal(1, _state.Result.Count(TrafficClass.Human));
-        Assert.Equal(1, _state.Result.Count(TrafficClass.Attack));
-        Assert.Equal(1, _state.Result.PageViews);
-        Assert.Equal(["sample-nginx.log"], _state.Result.FileNames);
+        Assert.NotNull(State.Result);
+        Assert.Equal(2, State.Result.Requests);
+        Assert.Equal(1, State.Result.Count(TrafficClass.Human));
+        Assert.Equal(1, State.Result.Count(TrafficClass.Attack));
+        Assert.Equal(1, State.Result.PageViews);
+        Assert.Equal(["sample-nginx.log"], State.Result.FileNames);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public sealed class UploadTests : MudBlazorTestContext
         var cancelled = cut.WaitForElement("[data-testid=cancelled]", Patience);
 
         Assert.Contains("abgebrochen", cancelled.TextContent);
-        Assert.Null(_state.Result);
+        Assert.Null(State.Result);
         Assert.Empty(cut.FindAll("[data-testid=summary]"));
         Assert.Empty(cut.FindAll("[data-testid=progress]"));
     }
@@ -223,8 +223,8 @@ public sealed class UploadTests : MudBlazorTestContext
 
         cut.WaitForElement("[data-testid=summary]", Patience);
 
-        Assert.Equal(1, _state.Result!.Diagnostics.UnknownLines);
-        Assert.Equal(3, _state.Result.Diagnostics.TotalLines);
+        Assert.Equal(1, State.Result!.Diagnostics.UnknownLines);
+        Assert.Equal(3, State.Result.Diagnostics.TotalLines);
     }
 
     private static string ManyLines(int count) =>

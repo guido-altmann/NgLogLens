@@ -11,11 +11,15 @@
 else if (Result.IsEmpty)
 {
     <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="empty-data">
-        In der geöffneten Datei steht keine einzige Anfrage.
+        @(Result.Range is null
+            ? "In der geöffneten Datei steht keine einzige Anfrage."
+            : "Im gewählten Zeitraum steht keine einzige Anfrage.")
     </MudAlert>
 }
 else
 {
+    <RangeNote Range="Result.Range" />
+
     @ChildContent(Result)
 }
 

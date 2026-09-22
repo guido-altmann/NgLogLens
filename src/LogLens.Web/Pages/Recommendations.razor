@@ -1,5 +1,68 @@
 @page "/recommendations"
 
+@using LogLens.Core.Models
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="Empfehlungen" Milestone="M6" />
+<PageTitle>Empfehlungen – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Empfehlungen</MudText>
+
+<AnalysisGate Result="State.Result">
+    @if (context.Findings.Count == 0)
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="no-findings">
+            Keine der Regeln hat angeschlagen: an der Konfiguration ist im ausgewerteten Zeitraum nichts zu tun.
+        </MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1" Class="mb-4" data-testid="findings-summary">@Summary(context)</MudText>
+
+        @foreach (var finding in context.Findings)
+        {
+            <MudPaper Outlined="true" Class="pa-4 mb-4" data-testid="@($"finding-{finding.Id}")">
+                <div class="d-flex align-center flex-wrap gap-2 mb-2">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                             Color="@PriorityColor(finding.Priority)" Class="ma-0">
+                        @PriorityLabel(finding.Priority)
+                    </MudChip>
+                    <MudText Typo="Typo.h6">@finding.Title</MudText>
+                </div>
+
+                <MudText Typo="Typo.body2" Class="mb-2" data-testid="reason">@finding.Reason</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">@finding.Advice</MudText>
+
+                @if (finding.Details.Count > 0)
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-3">@finding.DetailsCaption</MudText>
+                    <ul class="mud-typography-body2 pl-6 mb-0" data-testid="details">
+                        @foreach (var detail in finding.Details)
+                        {
+                            <li class="text-break">@detail</li>
+                        }
+                        @if (finding.MoreDetails > 0)
+                        {
+                            <li class="mud-text-secondary">… und @finding.MoreDetails weitere</li>
+                        }
+                    </ul>
+                }
+
+                @if (finding.Snippet is { } snippet)
+                {
+                    <div class="d-flex align-center justify-space-between flex-wrap gap-2 mt-3">
+                        <MudText Typo="Typo.subtitle2">@snippet.Caption</MudText>
+                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.ContentCopy"
+                                   OnClick="@(() => CopyAsync(finding))"
+                                   data-testid="@($"copy-{finding.Id}")">Kopieren</MudButton>
+                    </div>
+                    <pre class="snippet" data-testid="snippet"><code>@snippet.Text</code></pre>
+                }
+            </MudPaper>
+        }
+
+        <MudText Typo="Typo.caption" Class="mud-text-secondary d-block">
+            Die Schnipsel sind Vorlagen, keine fertige Konfiguration: Pfade, Netze und Namen gehören angepasst.
+        </MudText>
+    }
+</AnalysisGate>

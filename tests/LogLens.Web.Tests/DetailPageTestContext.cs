@@ -23,15 +23,20 @@ public abstract class DetailPageTestContext : MudBlazorTestContext
         Services.AddSingleton(TestIpRanges);
         Services.AddLogLensCore();
         Services.AddApexCharts();
-        Services.AddSingleton(State);
-        Services.AddSingleton(Preferences);
+        Services.AddSingleton<AnalysisState>();
+        Services.AddSingleton<ViewPreferences>();
         Services.AddSingleton<IpDisplay>();
+        Services.AddSingleton<SettingsService>();
         Services.AddScoped<FileDownloadService>();
     }
 
-    protected AnalysisState State { get; } = new();
+    /// <summary>
+    /// Erst beim Zugriff aufgelöst: der Dienstanbieter von bUnit wird beim ersten
+    /// Abruf gebaut, danach nimmt er keine Registrierung mehr an.
+    /// </summary>
+    protected AnalysisState State => Services.GetRequiredService<AnalysisState>();
 
-    protected ViewPreferences Preferences { get; } = new();
+    protected ViewPreferences Preferences => Services.GetRequiredService<ViewPreferences>();
 
     /// <summary>
     /// Wie in sample-expected.md festgelegt: <c>216.73.216.0/22</c> gehört Anthropic,
