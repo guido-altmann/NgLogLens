@@ -191,7 +191,9 @@ public sealed class UploadTests : MudBlazorTestContext
         var cut = Render<Upload>();
 
         UploadLog(cut, ManyLines(200), blockAfterFirstRead: gate.Task);
-        cut.WaitForElement("[data-testid=cancel]", Patience).Click();
+        // Fortschrittsmeldungen rendern neu; ein zwischen Suchen und Klicken veraltetes
+        // Element hat keinen Handler mehr. Deshalb im Wiederholungsblock suchen und klicken.
+        cut.WaitForAssertion(() => cut.Find("[data-testid=cancel]").Click(), Patience);
         gate.SetResult();
 
         var cancelled = cut.WaitForElement("[data-testid=cancelled]", Patience);

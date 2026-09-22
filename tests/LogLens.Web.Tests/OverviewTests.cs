@@ -80,11 +80,10 @@ public sealed class OverviewTests : MudBlazorTestContext
 
         cut.FindAll(".mud-toggle-item").Single(i => i.TextContent.Contains("Nur Menschen")).Click();
 
-        var headers = cut.FindAll("[data-testid=daily-table-panel] thead th")
-            .Select(cell => cell.TextContent.Trim())
-            .ToArray();
-
-        Assert.Equal(["Tag", "Menschen", "Summe"], headers);
+        // MudToggleGroup meldet die Auswahl asynchron; ohne Warten war der Test sporadisch rot.
+        cut.WaitForAssertion(() => Assert.Equal(
+            ["Tag", "Menschen", "Summe"],
+            cut.FindAll("[data-testid=daily-table-panel] thead th").Select(cell => cell.TextContent.Trim())));
     }
 
     [Fact]
