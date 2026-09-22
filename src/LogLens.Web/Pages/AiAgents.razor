@@ -1,5 +1,136 @@
 @page "/ai-agents"
 
+@* ApexCharts bringt eigene Size-, Color- und Align-Typen mit; die MudBlazor-Pendants
+   stehen in dieser Datei deshalb voll qualifiziert. *@
+@using ApexCharts
+@using LogLens.Core.Models
+@using LogLens.Web.Charts
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="KI-Agenten" Milestone="M5" />
+<PageTitle>KI-Agenten – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">KI-Agenten</MudText>
+
+<AnalysisGate Result="State.Result">
+    @if (context.AiAgents.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="no-agents">
+            Keine Anfrage trägt die Kennung eines bekannten KI-Agenten.
+        </MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1" Class="mb-4" data-testid="agent-summary">@Summary(context)</MudText>
+
+        <MudPaper Outlined="true" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Verdikte je Agent</MudText>
+
+            <ApexChart @key="@($"verdicts-{IsDarkMode}")" TItem="AiAgentStatistics"
+                       Options="VerdictOptions" Height="@ChartHeight(context)">
+                @foreach (var style in AiVerdictStyles.All)
+                {
+                    <ApexPointSeries TItem="AiAgentStatistics"
+                                     Items="context.AiAgents"
+                                     Name="@style.Label"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(a => a.Name)"
+                                     YValue="@(a => a.Of(style.Verdict))" />
+                }
+            </ApexChart>
+
+            @* Legende mit Zahlen: das Verdikt ist nie nur an der Farbe erkennbar (SPEC 9). *@
+            <div class="d-flex flex-wrap gap-4 mt-2" data-testid="verdict-legend">
+                @foreach (var style in AiVerdictStyles.All)
+                {
+                    <div class="d-flex align-center gap-2">
+                        <span class="legend-dot" style="background-color:@style.ColorFor(IsDarkMode);"></span>
+                        <MudText Typo="Typo.body2">
+                            <strong>@style.Label</strong> @VerdictTotal(context, style.Verdict).ToString("N0")
+                            <span class="mud-text-secondary">– @style.Description</span>
+                        </MudText>
+                    </div>
+                }
+            </div>
+
+            <MudSimpleTable Dense="true" Elevation="0" Class="mt-4" Style="overflow-x:auto;" data-testid="agents">
+                <thead>
+                    <tr>
+                        <th scope="col">Agent</th>
+                        <th scope="col">Anbieter</th>
+                        @foreach (var style in AiVerdictStyles.All)
+                        {
+                            <th scope="col" class="text-right">@style.Label</th>
+                        }
+                        <th scope="col" class="text-right">Summe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var agent in context.AiAgents)
+                    {
+                        <tr>
+                            <th scope="row">@agent.Name</th>
+                            <td>@(agent.Provider ?? "–")</td>
+                            @foreach (var style in AiVerdictStyles.All)
+                            {
+                                <td class="text-right">@agent.Of(style.Verdict).ToString("N0")</td>
+                            }
+                            <td class="text-right">@agent.Requests.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2" data-testid="ip-range-note">
+                @IpRangeNote
+            </MudText>
+        </MudPaper>
+
+        <MudPaper Outlined="true" Class="pa-4">
+            <MudText Typo="Typo.h6">Abgerufene Seiten echter Agenten</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
+                Nur verifizierte Anfragen: die IP liegt in einem veröffentlichten Bereich des Anbieters.
+            </MudText>
+
+            @if (!context.AiAgents.Any(a => a.Verified > 0))
+            {
+                <MudText Typo="Typo.body2" data-testid="no-verified">
+                    Kein Agent ließ sich über seine IP bestätigen.
+                </MudText>
+            }
+            else
+            {
+                <MudExpansionPanels MultiExpansion="true" Elevation="0" data-testid="verified-pages">
+                    @foreach (var agent in context.AiAgents.Where(a => a.Verified > 0))
+                    {
+                        <MudExpansionPanel Text="@PanelTitle(agent)" Expanded="@(agent == FirstVerified(context))">
+                            <MudSimpleTable Dense="true" Elevation="0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Pfad</th>
+                                        <th scope="col" class="text-right">Abrufe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in agent.VerifiedPages)
+                                    {
+                                        <tr>
+                                            <td class="text-break">@Decode(item.Key)</td>
+                                            <td class="text-right">@item.Count.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                    @if (agent.VerifiedWithoutPath > 0)
+                                    {
+                                        <tr>
+                                            <td class="mud-text-secondary">ohne Pfad (gekürzte Zeile)</td>
+                                            <td class="text-right">@agent.VerifiedWithoutPath.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
+            }
+        </MudPaper>
+    }
+</AnalysisGate>

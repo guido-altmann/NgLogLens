@@ -1,5 +1,240 @@
 @page "/server-health"
 
+@* ApexCharts bringt eigene Size-, Color- und Align-Typen mit; die MudBlazor-Pendants
+   stehen in dieser Datei deshalb voll qualifiziert. *@
+@using ApexCharts
+@using LogLens.Core.Models
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="Server-Zustand" Milestone="M5" />
+<PageTitle>Server-Zustand – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Server-Zustand</MudText>
+
+<AnalysisGate Result="State.Result">
+    @{ var health = context.ServerHealth; }
+
+    <MudText Typo="Typo.body1" Class="mb-4" data-testid="health-summary">@Summary(context)</MudText>
+
+    <MudGrid Class="mb-2">
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 height-full">
+                <MudText Typo="Typo.h6" GutterBottom="true">Statuscodes</MudText>
+                <div class="d-flex flex-wrap gap-2 mb-2" data-testid="status-classes">
+                    @foreach (var group in StatusClasses(health))
+                    {
+                        <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined">
+                            @group.Label: @group.Requests.ToString("N0")
+                        </MudChip>
+                    }
+                </div>
+                <MudSimpleTable Dense="true" Elevation="0" data-testid="status-codes">
+                    <thead>
+                        <tr>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-right">Anfragen</th>
+                            <th scope="col" class="text-right">Anteil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var status in health.StatusCodes)
+                        {
+                            <tr>
+                                <th scope="row">@status.Status</th>
+                                <td class="text-right">@status.Requests.ToString("N0")</td>
+                                <td class="text-right">@Share(status.Requests, context.Requests)</td>
+                            </tr>
+                        }
+                        @if (health.RequestsWithoutStatus > 0)
+                        {
+                            <tr>
+                                <th scope="row" class="mud-text-secondary">ohne Status (gekürzt)</th>
+                                <td class="text-right">@health.RequestsWithoutStatus.ToString("N0")</td>
+                                <td class="text-right">@Share(health.RequestsWithoutStatus, context.Requests)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 height-full">
+                <MudText Typo="Typo.h6" GutterBottom="true">Serverfehler (5xx)</MudText>
+                @if (health.ServerErrors.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" data-testid="no-server-errors">
+                        Keine Anfrage endete mit einem Serverfehler.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0" data-testid="server-errors">
+                        <thead>
+                            <tr>
+                                <th scope="col">Pfad</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-right">Anfragen</th>
+                                <th scope="col">Zuletzt (UTC)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var error in health.ServerErrors)
+                            {
+                                <tr>
+                                    <td class="text-break">@Decode(error.Path)</td>
+                                    <td>@error.Status</td>
+                                    <td class="text-right">@error.Requests.ToString("N0")</td>
+                                    <td class="text-nowrap">@Time(error.LastSeen)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Outlined="true" Class="pa-4 mb-6">
+        <MudText Typo="Typo.h6">Proxy-Instanzen</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
+            Wechselt die IP des Proxys, wurde er meist neu gestartet oder neu deployt.
+        </MudText>
+
+        <ApexChart @key="@($"proxies-{IsDarkMode}")" TItem="ProxyInstance"
+                   Options="ProxyOptions" Height="@ProxyChartHeight(health)">
+            <ApexRangeSeries TItem="ProxyInstance"
+                             Items="health.ProxyInstances"
+                             Name="Aktiv"
+                             XValue="@(p => p.ProxyIp)"
+                             YMinValue="@(p => DayStart(p.FirstDay))"
+                             YMaxValue="@(p => DayStart(p.LastDay.AddDays(1)))" />
+        </ApexChart>
+
+        <MudSimpleTable Dense="true" Elevation="0" data-testid="proxies">
+            <thead>
+                <tr>
+                    <th scope="col">Proxy-IP</th>
+                    <th scope="col">Erster Tag</th>
+                    <th scope="col">Letzter Tag</th>
+                    <th scope="col" class="text-right">Anfragen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proxy in health.ProxyInstances)
+                {
+                    <tr>
+                        <th scope="row">@proxy.ProxyIp</th>
+                        <td>@proxy.FirstDay.ToString("dd.MM.yyyy")</td>
+                        <td>@proxy.LastDay.ToString("dd.MM.yyyy")</td>
+                        <td class="text-right">@proxy.Requests.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+
+        @if (context.DaysWithoutEntries.Count > 0)
+        {
+            <MudText Typo="Typo.body2" Class="mt-3" data-testid="days-without-entries">
+                <strong>Tage ohne Einträge (@context.DaysWithoutEntries.Count.ToString("N0")):</strong>
+                @DayRanges(context.DaysWithoutEntries)
+            </MudText>
+        }
+    </MudPaper>
+
+    <MudPaper Outlined="true" Class="pa-4 mb-6">
+        <MudText Typo="Typo.h6">Error-Zeilen</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2" data-testid="error-summary">
+            @ErrorSummary(context)
+        </MudText>
+
+        @if (context.ErrorEntries.Count > 0)
+        {
+            <div class="d-flex flex-wrap gap-2 mb-2" data-testid="error-levels">
+                @foreach (var level in health.ErrorLevels)
+                {
+                    <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined">
+                        @(level.Level ?? "gekürzt"): @level.Lines.ToString("N0")
+                    </MudChip>
+                }
+            </div>
+
+            <MudDataGrid T="ErrorEntry" Items="context.ErrorEntries" Dense="true"
+                         Virtualize="@VirtualizeErrors(context)" FixedHeader="@VirtualizeErrors(context)"
+                         Height="@(VirtualizeErrors(context) ? "360px" : null)" ItemSize="37" Filterable="false"
+                         data-testid="error-lines">
+                <Columns>
+                    <PropertyColumn Property="e => e.LineNumber" Title="Zeile" />
+                    <PropertyColumn Property="e => e.Timestamp" Title="Zeit (UTC)" Format="dd.MM.yyyy HH:mm:ss" />
+                    <PropertyColumn Property="e => e.Level" Title="Level" />
+                    <TemplateColumn T="ErrorEntry" Title="Meldung" Sortable="false">
+                        <CellTemplate Context="cell">
+                            <span class="text-break">@cell.Item.Message</span>
+                            @if (cell.Item.IsTruncated)
+                            {
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary"> (gekürzt)</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="e => e.Request" Title="Anfrage" />
+                </Columns>
+            </MudDataGrid>
+        }
+    </MudPaper>
+
+    <MudPaper Outlined="true" Class="pa-4">
+        <MudText Typo="Typo.h6" GutterBottom="true">Parser-Diagnose</MudText>
+        <MudSimpleTable Dense="true" Elevation="0" data-testid="diagnostics">
+            <tbody>
+                @foreach (var row in DiagnosticRows(context.Diagnostics))
+                {
+                    <tr>
+                        <th scope="row">@row.Label</th>
+                        <td class="text-right">@row.Value.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+
+        @if (context.Diagnostics.Files.Count > 1)
+        {
+            <MudText Typo="Typo.subtitle2" Class="mt-4">Dateien</MudText>
+            <MudSimpleTable Dense="true" Elevation="0" data-testid="files">
+                <thead>
+                    <tr>
+                        <th scope="col">Datei</th>
+                        <th scope="col" class="text-right">Zeilen</th>
+                        <th scope="col" class="text-right">Zeilennummern</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var file in context.Diagnostics.Files)
+                    {
+                        <tr>
+                            <td>@file.Name</td>
+                            <td class="text-right">@file.Lines.ToString("N0")</td>
+                            <td class="text-right">@file.FirstLineNumber.ToString("N0")–@file.LastLineNumber.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (context.Diagnostics.UnknownSamples.Count > 0)
+        {
+            <MudText Typo="Typo.subtitle2" Class="mt-4">
+                Nicht erkannte Zeilen (Beispiele, höchstens @MaxUnknownSamples)
+            </MudText>
+            <MudSimpleTable Dense="true" Elevation="0" data-testid="unknown-samples">
+                <tbody>
+                    @foreach (var sample in context.Diagnostics.UnknownSamples)
+                    {
+                        <tr>
+                            <th scope="row" class="text-nowrap">@sample.FileName:@sample.LineNumber</th>
+                            <td><code class="text-break">@sample.Text</code></td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </MudPaper>
+</AnalysisGate>

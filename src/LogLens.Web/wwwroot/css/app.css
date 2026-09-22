@@ -97,3 +97,17 @@ html, body {
 .width-full {
     width: 100%;
 }
+
+/* Lange Pfade und User-Agents dürfen umbrechen, statt die Tabelle zu sprengen. */
+.text-break {
+    word-break: break-all;
+}
+
+.text-nowrap {
+    white-space: nowrap;
+}
+
+/* Zahlenspalten rechtsbündig. MudBlazor bringt keine Klasse dieses Namens mit. */
+.text-right {
+    text-align: right !important;
+}

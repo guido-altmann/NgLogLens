@@ -1,5 +1,136 @@
 @page "/attacks"
 
+@* ApexCharts bringt eigene Size-, Color- und Align-Typen mit; die MudBlazor-Pendants
+   stehen in dieser Datei deshalb voll qualifiziert. *@
+@using ApexCharts
+@using LogLens.Core.Models
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="Angriffe" Milestone="M5" />
+<PageTitle>Angriffe – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Angriffe</MudText>
+
+<AnalysisGate Result="State.Result">
+    @if (context.Attacks.Requests == 0)
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="no-attacks">
+            Keine Anfrage wurde als Angriff gewertet.
+        </MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1" Class="mb-4" data-testid="attack-summary">@Summary(context)</MudText>
+
+        <MudPaper Outlined="true" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Kategorien</MudText>
+
+            <ApexChart @key="@($"categories-{IsDarkMode}")" TItem="CategoryCount"
+                       Options="CategoryOptions" Height="@CategoryChartHeight(context)">
+                <ApexPointSeries TItem="CategoryCount"
+                                 Items="context.Attacks.Categories"
+                                 Name="Anfragen"
+                                 SeriesType="SeriesType.Bar"
+                                 XValue="@(c => c.Category)"
+                                 YValue="@(c => c.Requests)" />
+            </ApexChart>
+
+            <MudSimpleTable Dense="true" Elevation="0" Class="mt-2" data-testid="categories">
+                <thead>
+                    <tr>
+                        <th scope="col">Kategorie</th>
+                        <th scope="col" class="text-right">Anfragen</th>
+                        <th scope="col" class="text-right">Anteil</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in context.Attacks.Categories)
+                    {
+                        <tr>
+                            <td>@category.Category</td>
+                            <td class="text-right">@category.Requests.ToString("N0")</td>
+                            <td class="text-right">@category.Share.ToString("P1")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                „Aufklärung" sind unauffällige Anfragen einer Scanner-IP, die für sich allein kein Angriff wären.
+            </MudText>
+        </MudPaper>
+
+        <MudPaper Outlined="true" Class="pa-4 mb-6">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
+                <MudText Typo="Typo.h6">Scanner</MudText>
+
+                @if (context.Scanners.Count > 0)
+                {
+                    <div class="d-flex flex-wrap gap-2" data-testid="exports">
+                        <MudButton Variant="Variant.Outlined" Size="MudBlazor.Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Download"
+                                   OnClick="DownloadNginxAsync" data-testid="export-nginx">nginx-deny-Liste</MudButton>
+                        <MudButton Variant="Variant.Outlined" Size="MudBlazor.Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Download"
+                                   OnClick="DownloadPlainTextAsync" data-testid="export-text">Klartext</MudButton>
+                        <MudButton Variant="Variant.Outlined" Size="MudBlazor.Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.Download"
+                                   OnClick="DownloadCsvAsync" data-testid="export-csv">CSV</MudButton>
+                        <MudButton Variant="Variant.Text" Size="MudBlazor.Size.Small"
+                                   StartIcon="@Icons.Material.Outlined.ContentCopy"
+                                   OnClick="CopyNginxAsync" data-testid="copy-nginx">deny-Liste kopieren</MudButton>
+                    </div>
+                }
+            </div>
+
+            <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
+                Eine IP mit mindestens @ScannerThreshold Einzelangriffen gilt als Scanner; alle ihre Anfragen zählen
+                als Angriff. Scanner-IPs stehen vollständig da, damit sie in eine Blockliste passen.
+            </MudText>
+
+            @if (context.Scanners.Count == 0)
+            {
+                <MudText Typo="Typo.body2" data-testid="no-scanners">
+                    Keine IP hat die Schwelle erreicht; die Angriffe verteilen sich auf Einzelanfragen.
+                </MudText>
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Elevation="0" Style="overflow-x:auto;" data-testid="scanners">
+                    <thead>
+                        <tr>
+                            <th scope="col">IP</th>
+                            <th scope="col" class="text-right">Anfragen</th>
+                            <th scope="col" class="text-right">Einzelangriffe</th>
+                            <th scope="col">Hauptkategorie</th>
+                            <th scope="col">Erster Zeitpunkt (UTC)</th>
+                            <th scope="col">Letzter Zeitpunkt (UTC)</th>
+                            <th scope="col" class="text-right">Dauer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var scanner in context.Scanners)
+                        {
+                            <tr>
+                                <td class="text-nowrap">
+                                    <MudLink Href="@RawDataLink(scanner.ClientIp)"
+                                             aria-label="@($"Anfragen von {scanner.ClientIp} in den Rohdaten zeigen")">@scanner.ClientIp</MudLink>
+                                </td>
+                                <td class="text-right">@scanner.Requests.ToString("N0")</td>
+                                <td class="text-right">@scanner.IndividualAttacks.ToString("N0")</td>
+                                <td>@scanner.MainCategory</td>
+                                <td class="text-nowrap">@Time(scanner.FirstSeen)</td>
+                                <td class="text-nowrap">@Time(scanner.LastSeen)</td>
+                                <td class="text-right text-nowrap">@Duration(scanner.Burst)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </MudPaper>
+
+        <MudPaper Outlined="true" Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">Tageszeit: Angriffe</MudText>
+            <HourlyChart Values="context.Attacks.RequestsPerHour" SeriesName="Angriffe"
+                         Color="AttackColor" TestId="attack-hours" />
+        </MudPaper>
+    }
+</AnalysisGate>

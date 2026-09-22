@@ -1,5 +1,112 @@
 @page "/raw"
 
+@using LogLens.Core.Models
+@using LogLens.Web.Charts
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="Rohdaten" Milestone="M5" />
+<PageTitle>Rohdaten – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Rohdaten</MudText>
+
+<AnalysisGate Result="State.Result">
+    <MudPaper Outlined="true" Class="pa-4 mb-4" data-testid="filters">
+        <MudChipSet @key="@($"classes-{_resetCount}")" T="TrafficClass" SelectedValues="_classes" SelectedValuesChanged="SetClassesAsync"
+                    SelectionMode="SelectionMode.MultiSelection" CheckMark="true" Variant="Variant.Outlined"
+                    aria-label="Filter nach Klasse" data-testid="class-filter">
+            @foreach (var style in TrafficClassStyles.All)
+            {
+                <MudChip T="TrafficClass" Value="style.Class" Text="@style.Label" />
+            }
+        </MudChipSet>
+
+        @* Neuer Schlüssel beim Zurücksetzen: die Textfelder halten ihren Text sonst
+           selbst fest und melden ihn erneut. *@
+        <MudGrid @key="@($"fields-{_resetCount}")" Spacing="2" Class="mt-1">
+            <MudItem xs="12" sm="6" md="2">
+                <MudTextField T="string" Label="Status" Value="_statusText" ValueChanged="SetStatusAsync"
+                              Placeholder="404, 4xx" DebounceInterval="300" Immediate="true"
+                              Error="@(!_statusValid)" ErrorText="z. B. 404, 4xx oder 2xx, 301"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="status-filter" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField T="string" Label="IP oder Netz" Value="_ip" ValueChanged="SetIpAsync"
+                              Placeholder="203.0.113.10 oder 203.0.113.0/24" DebounceInterval="300" Immediate="true"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="ip-filter" />
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField T="string" Label="Pfad oder Query" Value="_path" ValueChanged="SetPathAsync"
+                              DebounceInterval="300" Immediate="true"
+                              Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="path-filter" />
+            </MudItem>
+            <MudItem xs="6" md="2">
+                <MudDatePicker Label="Von (UTC)" Date="_from" DateChanged="SetFromAsync" Clearable="true"
+                               MinDate="MinDate(context)" MaxDate="MaxDate(context)"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="from-filter" />
+            </MudItem>
+            <MudItem xs="6" md="2">
+                <MudDatePicker Label="Bis (UTC)" Date="_to" DateChanged="SetToAsync" Clearable="true"
+                               MinDate="MinDate(context)" MaxDate="MaxDate(context)"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="to-filter" />
+            </MudItem>
+        </MudGrid>
+
+        <div class="d-flex align-center justify-space-between flex-wrap gap-2 mt-2">
+            <MudText Typo="Typo.body2" data-testid="row-count" role="status">@RowCount(context)</MudText>
+            <MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Outlined.FilterAltOff"
+                       Disabled="@_filter.IsEmpty" OnClick="ResetAsync" data-testid="reset-filters">
+                Filter zurücksetzen
+            </MudButton>
+        </div>
+    </MudPaper>
+
+    <MudDataGrid T="ClassifiedEntry" Items="_rows" Dense="true" Virtualize="true" FixedHeader="true"
+                 Height="calc(100vh - 380px)" ItemSize="37" Filterable="false" SortMode="SortMode.Single"
+                 HorizontalScrollbar="true" data-testid="raw-grid">
+        <Columns>
+            <PropertyColumn Property="e => e.Entry.LineNumber" Title="Zeile" />
+            <PropertyColumn Property="e => e.Entry.Timestamp" Title="Zeit (UTC)">
+                <CellTemplate Context="cell">
+                    <span class="text-nowrap">@Time(cell.Item.Entry)</span>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="e => e.Class" Title="Klasse">
+                <CellTemplate Context="cell">
+                    <span class="d-inline-flex align-center gap-1 text-nowrap">
+                        <span class="legend-dot" style="background-color:@ClassColor(cell.Item.Class);"></span>
+                        @TrafficClassStyles.Label(cell.Item.Class)
+                    </span>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="e => e.ClientIp" Title="IP">
+                <CellTemplate Context="cell">
+                    <span class="text-nowrap">@Ips.Format(cell.Item, context)</span>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="e => e.Entry.Method" Title="Methode" />
+            <PropertyColumn Property="e => e.Entry.Path" Title="Pfad">
+                <CellTemplate Context="cell">
+                    <span class="text-break" title="@cell.Item.Entry.UserAgent">@Target(cell.Item.Entry)</span>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="e => e.Entry.Status" Title="Status" />
+            <PropertyColumn Property="e => e.Reason" Title="Grund" />
+            <PropertyColumn Property="e => e.AttackCategory" Title="Kategorie" />
+            <PropertyColumn Property="e => e.AgentName" Title="KI-Agent">
+                <CellTemplate Context="cell">
+                    @if (cell.Item.AgentName is { } agent)
+                    {
+                        <span class="text-nowrap">@agent (@AiVerdictStyles.Label(cell.Item.AiVerdict!.Value))</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">Keine Anfrage passt zu den Filtern.</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+
+    <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2">
+        Besucher-IPs sind auf /24 bzw. /48 gekürzt, Scanner-IPs stehen vollständig da. Der User-Agent erscheint beim
+        Überfahren des Pfads.
+    </MudText>
+</AnalysisGate>

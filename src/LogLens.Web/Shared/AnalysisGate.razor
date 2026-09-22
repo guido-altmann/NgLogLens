@@ -1,0 +1,26 @@
+@* Zeigt den Inhalt einer Auswertungsseite erst, wenn es etwas auszuwerten gibt. *@
+@using LogLens.Core.Models
+
+@if (Result is null)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="no-data">
+        Es ist noch keine Datei geöffnet.
+        <MudLink Href="/" Class="ml-1">Jetzt eine Logdatei öffnen</MudLink>
+    </MudAlert>
+}
+else if (Result.IsEmpty)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="empty-data">
+        In der geöffneten Datei steht keine einzige Anfrage.
+    </MudAlert>
+}
+else
+{
+    @ChildContent(Result)
+}
+
+@code {
+    [Parameter] public AnalysisResult? Result { get; set; }
+
+    [Parameter, EditorRequired] public RenderFragment<AnalysisResult> ChildContent { get; set; } = null!;
+}

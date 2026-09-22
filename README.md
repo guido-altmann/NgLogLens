@@ -17,7 +17,7 @@ Die fachliche Spezifikation steht in [docs/SPEC.md](docs/SPEC.md).
 | M2 | Parser für Access-, Error-, gekürzte und unbekannte Zeilen, Dedupe | fertig |
 | M3 | Klassifizierung | fertig |
 | M4 | Upload und Übersicht | fertig |
-| M5 | Detailseiten | offen |
+| M5 | Detailseiten: Besucher, Angriffe mit Export, KI-Agenten, Server-Zustand, Rohdaten | fertig |
 | M6 | Findings und Einstellungen | offen |
 | M7 | Feinschliff | offen |
 

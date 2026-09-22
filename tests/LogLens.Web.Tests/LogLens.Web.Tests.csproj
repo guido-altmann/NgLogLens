@@ -17,4 +17,9 @@
     <ProjectReference Include="..\..\src\LogLens.Web\LogLens.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Fixtures">
+    <None Include="..\fixtures\**\*" Link="fixtures\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

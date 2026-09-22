@@ -22,5 +22,8 @@ builder.Services.AddLogLensCore();
 
 // Das Ergebnis lebt nur im Arbeitsspeicher dieser Sitzung (CLAUDE.md, Datenschutz).
 builder.Services.AddSingleton<AnalysisState>();
+builder.Services.AddSingleton<ViewPreferences>();
+builder.Services.AddSingleton<IpDisplay>();
+builder.Services.AddScoped<FileDownloadService>();
 
 await builder.Build().RunAsync();

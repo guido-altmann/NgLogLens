@@ -1,0 +1,38 @@
+@* Anfragen je Stunde (UTC) als Säulen, mit Tabelle als Textalternative (SPEC 6, 9). *@
+@using ApexCharts
+
+<ApexChart @key="@($"{TestId}-{IsDarkMode}-{Color.LightColor}")" TItem="HourPoint"
+           Options="Options" Height="260">
+    <ApexPointSeries TItem="HourPoint"
+                     Items="Points"
+                     Name="@SeriesName"
+                     SeriesType="SeriesType.Bar"
+                     XValue="@(p => p.Label)"
+                     YValue="@(p => p.Requests)" />
+</ApexChart>
+
+<MudText Typo="Typo.caption" Class="mud-text-secondary" data-testid="@($"{TestId}-summary")">
+    @Summary
+</MudText>
+
+<MudExpansionPanels Elevation="0" Class="mt-2">
+    <MudExpansionPanel Text="Zahlen als Tabelle" data-testid="@($"{TestId}-table")">
+        <MudSimpleTable Dense="true" Striped="true" Elevation="0" Style="max-height:24rem;overflow:auto;">
+            <thead>
+                <tr>
+                    <th scope="col">Stunde (UTC)</th>
+                    <th scope="col" class="text-right">@SeriesName</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var point in Points)
+                {
+                    <tr>
+                        <th scope="row">@point.Range</th>
+                        <td class="text-right">@point.Requests.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudExpansionPanel>
+</MudExpansionPanels>

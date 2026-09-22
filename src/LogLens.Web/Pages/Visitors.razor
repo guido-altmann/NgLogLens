@@ -1,5 +1,151 @@
 @page "/visitors"
 
+@using LogLens.Core.Models
 @using LogLens.Web.Shared
 
-<PagePlaceholder Title="Besucher" Milestone="M5" />
+<PageTitle>Besucher – LogLens</PageTitle>
+
+<MudText Typo="Typo.h1" Style="font-size:2rem;" GutterBottom="true">Besucher</MudText>
+
+<AnalysisGate Result="State.Result">
+    @{ var visitors = context.VisitorsFor(Preferences.ExcludeMonitoring); }
+
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
+        <MudText Typo="Typo.body1" data-testid="visitor-summary">@Summary(visitors)</MudText>
+
+        <MudSwitch T="bool" Value="Preferences.ExcludeMonitoring" ValueChanged="SetExcludeMonitoring"
+                   Color="Color.Primary" data-testid="monitoring-switch"
+                   Label="Monitoring aus Seitenaufrufen herausrechnen" />
+    </div>
+
+    @if (MonitoringPageViews(context) > 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-4" data-testid="monitoring-hint">
+            @MonitoringHint(context)
+        </MudAlert>
+    }
+
+    <MudGrid Class="mb-2">
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 height-full">
+                <MudText Typo="Typo.h6" GutterBottom="true">Top-Seiten</MudText>
+                @if (visitors.TopPages.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Keine Seitenaufrufe von Menschen.</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0" data-testid="top-pages">
+                        <thead>
+                            <tr>
+                                <th scope="col">Seite</th>
+                                <th scope="col" class="text-right">Aufrufe</th>
+                                <th scope="col" class="text-right">Anteil</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in visitors.TopPages)
+                            {
+                                <tr>
+                                    <td class="text-break">@Decode(item.Key)</td>
+                                    <td class="text-right">@item.Count.ToString("N0")</td>
+                                    <td class="text-right">@Share(item.Count, visitors.PageViews)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                    @if (visitors.DistinctPages > visitors.TopPages.Count)
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @visitors.TopPages.Count von @visitors.DistinctPages.ToString("N0") Seiten.
+                        </MudText>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Outlined="true" Class="pa-4 height-full">
+                <MudText Typo="Typo.h6" GutterBottom="true">Referrer</MudText>
+                @if (visitors.TopReferrers.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="no-referrers">
+                        Kein Seitenaufruf kam über einen fremden Link.
+                    </MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0" data-testid="top-referrers">
+                        <thead>
+                            <tr>
+                                <th scope="col">Herkunft</th>
+                                <th scope="col" class="text-right">Seitenaufrufe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var referrer in visitors.TopReferrers)
+                            {
+                                <tr>
+                                    <td>@referrer.Key</td>
+                                    <td class="text-right">@referrer.Count.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+                <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2" data-testid="own-domains">
+                    @OwnDomainsHint(context)
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Outlined="true" Class="pa-4 mb-6">
+        <MudText Typo="Typo.h6" GutterBottom="true">Tageszeit: Anfragen von Menschen</MudText>
+        <HourlyChart Values="visitors.RequestsPerHour" SeriesName="Anfragen von Menschen"
+                     Color="HumanColor" TestId="visitor-hours" />
+    </MudPaper>
+
+    <MudPaper Outlined="true" Class="pa-4">
+        <MudText Typo="Typo.h6">Aktivste Netze</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
+            Besucher werden zu /24- bzw. /48-Netzen zusammengefasst; einzelne Adressen stehen hier nicht.
+        </MudText>
+        @if (visitors.TopNetworks.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Keine Anfragen von Menschen.</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" data-testid="top-networks">
+                <thead>
+                    <tr>
+                        <th scope="col">Netz</th>
+                        <th scope="col" class="text-right">Seitenaufrufe</th>
+                        <th scope="col" class="text-right">Anfragen</th>
+                        <th scope="col" class="text-right">Adressen</th>
+                        <th scope="col">Hinweis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var network in visitors.TopNetworks)
+                    {
+                        <tr>
+                            <td>@network.Network</td>
+                            <td class="text-right">@network.PageViews.ToString("N0")</td>
+                            <td class="text-right">@network.Requests.ToString("N0")</td>
+                            <td class="text-right">@network.DistinctIps.ToString("N0")</td>
+                            <td>
+                                @if (network.HasMonitoring)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                             Icon="@Icons.Material.Outlined.MonitorHeart">Monitoring-Verdacht</MudChip>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </MudPaper>
+</AnalysisGate>
