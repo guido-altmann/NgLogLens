@@ -16,4 +16,10 @@ public sealed class ParserOptions
 
     /// <summary>Maximale Dateigröße beim Einlesen im Browser (SPEC/CLAUDE.md: Default 200 MB).</summary>
     public long MaxFileSizeBytes { get; set; } = 200L * 1024 * 1024;
+
+    /// <summary>
+    /// Dateiname der Fehlerseite. Error-Zeilen „open() …/&lt;Name&gt; failed" sind
+    /// Folgefehler eines 404 und werden aussortiert (SPEC 3).
+    /// </summary>
+    public string NotFoundPageFileName { get; set; } = "404.html";
 }

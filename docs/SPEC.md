@@ -64,9 +64,15 @@ Werden gezählt und in einer Diagnoseliste (max. 50 Beispiele) gesammelt, nie ve
 
 ```csharp
 public sealed record AccessEntry(
-    int LineNumber, DateTimeOffset Timestamp, string ProxyIp, string ClientIp,
-    string? Method, string? Path, string? Query, int? Status, long? Bytes,
+    int LineNumber, DateTimeOffset Timestamp, TimePrecision TimePrecision,
+    string ProxyIp, string ClientIp, bool HasClientIpHeader,
+    string? Method, string? Path, string? Query, string? Protocol, int? Status, long? Bytes,
     string? Referer, string? UserAgent, bool IsTruncated);
+
+// Gekürzte Zeilen (2.3) enthalten oft nur Datum oder Datum und Stunde. Der Zeitstempel
+// wird dann auf den Beginn der bekannten Einheit gesetzt; TimePrecision hält fest, wie
+// genau er ist. Auswertungen je Stunde (6.) verwenden nur Einträge ab Hour.
+public enum TimePrecision { Second, Minute, Hour, Day }
 
 public enum TrafficClass { Human, AiAgent, Bot, Attack }
 
