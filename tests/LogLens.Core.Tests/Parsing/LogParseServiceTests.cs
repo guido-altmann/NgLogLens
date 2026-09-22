@@ -60,7 +60,7 @@ public sealed class LogParseServiceTests
     public async Task Fortschritt_wird_gemeldet()
     {
         var reports = new List<ParseProgress>();
-        var progress = new Progress<ParseProgress>(reports.Add);
+        var progress = new SynchronousProgress<ParseProgress>(reports.Add);
         var options = new ParserOptions { YieldInterval = 2 };
         var service = new LogParseService(
             new LogLineParserChain(LogLineParserChain.CreateDefaultParsers()),
@@ -71,9 +71,6 @@ public sealed class LogParseServiceTests
             LogFileSource.FromText(FixtureLog.Name, await File.ReadAllTextAsync(FixtureLog.FullPath, TestContext.Current.CancellationToken)),
             progress,
             TestContext.Current.CancellationToken);
-
-        // Progress<T> meldet über den Synchronisationskontext; im Test genügt die letzte Meldung.
-        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         Assert.NotEmpty(reports);
         Assert.Equal(32, reports[^1].LinesRead);
