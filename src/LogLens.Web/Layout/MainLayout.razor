@@ -8,11 +8,19 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+@* Erstes fokussierbares Element: Tastaturnutzer springen an Kopfzeile und Navigation
+   vorbei. Ein Button statt #-Link, denn mit <base href="/"> führte „#main-content"
+   auf die Startseite. *@
+<button type="button" class="skip-link" @onclick="SkipToContentAsync" data-testid="skip-link">
+    Zum Inhalt springen
+</button>
+
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       aria-label="Navigation ein- oder ausblenden" OnClick="ToggleDrawer" />
-        <MudText Typo="Typo.h6" Class="ml-2">NgLogLens</MudText>
+                       aria-label="Navigation ein- oder ausblenden" aria-expanded="@(_drawerOpen ? "true" : "false")"
+                       aria-controls="main-navigation" OnClick="ToggleDrawer" data-testid="drawer-toggle" />
+        <MudText Typo="Typo.h6" HtmlTag="p" Class="ml-2">NgLogLens</MudText>
         <MudText Typo="Typo.body2" Class="ml-2">by Guido Altmann</MudText>
         <MudSpacer />
         <PeriodFilter />
@@ -20,16 +28,18 @@
                        aria-label="@DarkModeLabel" OnClick="ToggleDarkModeAsync" data-testid="theme-toggle" />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always">
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always" id="main-navigation">
         <NavMenu />
     </MudDrawer>
 
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
-            @* Diagramme brauchen je Modus eigene Farben, keine Umkehrung (SPEC 9). *@
-            <CascadingValue Name="IsDarkMode" Value="_isDarkMode">
-                @Body
-            </CascadingValue>
-        </MudContainer>
+        <main id="main-content" tabindex="-1" class="main-content" @ref="_mainContent">
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+                @* Diagramme brauchen je Modus eigene Farben, keine Umkehrung (SPEC 9). *@
+                <CascadingValue Name="IsDarkMode" Value="_isDarkMode">
+                    @Body
+                </CascadingValue>
+            </MudContainer>
+        </main>
     </MudMainContent>
 </MudLayout>

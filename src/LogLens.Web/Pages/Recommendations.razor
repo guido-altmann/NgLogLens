@@ -26,7 +26,7 @@
                              Color="@PriorityColor(finding.Priority)" Class="ma-0">
                         @PriorityLabel(finding.Priority)
                     </MudChip>
-                    <MudText Typo="Typo.h6">@finding.Title</MudText>
+                    <MudText Typo="Typo.h6" HtmlTag="h2">@finding.Title</MudText>
                 </div>
 
                 <MudText Typo="Typo.body2" Class="mb-2" data-testid="reason">@finding.Reason</MudText>
@@ -34,7 +34,7 @@
 
                 @if (finding.Details.Count > 0)
                 {
-                    <MudText Typo="Typo.subtitle2" Class="mt-3">@finding.DetailsCaption</MudText>
+                    <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-3">@finding.DetailsCaption</MudText>
                     <ul class="mud-typography-body2 pl-6 mb-0" data-testid="details">
                         @foreach (var detail in finding.Details)
                         {
@@ -50,7 +50,7 @@
                 @if (finding.Snippet is { } snippet)
                 {
                     <div class="d-flex align-center justify-space-between flex-wrap gap-2 mt-3">
-                        <MudText Typo="Typo.subtitle2">@snippet.Caption</MudText>
+                        <MudText Typo="Typo.subtitle2" HtmlTag="h3">@snippet.Caption</MudText>
                         <MudButton Variant="Variant.Text" Size="Size.Small"
                                    StartIcon="@Icons.Material.Outlined.ContentCopy"
                                    OnClick="@(() => CopyAsync(finding))"

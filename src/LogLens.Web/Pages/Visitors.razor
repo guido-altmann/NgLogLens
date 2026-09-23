@@ -28,7 +28,7 @@
     <MudGrid Class="mb-2">
         <MudItem xs="12" md="6">
             <MudPaper Outlined="true" Class="pa-4 height-full">
-                <MudText Typo="Typo.h6" GutterBottom="true">Top-Seiten</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Top-Seiten</MudText>
                 @if (visitors.TopPages.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Keine Seitenaufrufe von Menschen.</MudText>
@@ -66,7 +66,7 @@
 
         <MudItem xs="12" md="6">
             <MudPaper Outlined="true" Class="pa-4 height-full">
-                <MudText Typo="Typo.h6" GutterBottom="true">Referrer</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Referrer</MudText>
                 @if (visitors.TopReferrers.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="no-referrers">
@@ -101,13 +101,13 @@
     </MudGrid>
 
     <MudPaper Outlined="true" Class="pa-4 mb-6">
-        <MudText Typo="Typo.h6" GutterBottom="true">Tageszeit: Anfragen von Menschen</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Tageszeit: Anfragen von Menschen</MudText>
         <HourlyChart Values="visitors.RequestsPerHour" SeriesName="Anfragen von Menschen"
                      Color="HumanColor" TestId="visitor-hours" />
     </MudPaper>
 
     <MudPaper Outlined="true" Class="pa-4">
-        <MudText Typo="Typo.h6">Aktivste Netze</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2">Aktivste Netze</MudText>
         <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
             Besucher werden zu /24- bzw. /48-Netzen zusammengefasst; einzelne Adressen stehen hier nicht.
         </MudText>

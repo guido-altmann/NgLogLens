@@ -23,20 +23,22 @@
         <MudText Typo="Typo.body1" Class="mb-4" data-testid="agent-summary">@Summary(context)</MudText>
 
         <MudPaper Outlined="true" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h6" GutterBottom="true">Verdikte je Agent</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Verdikte je Agent</MudText>
 
-            <ApexChart @key="@($"verdicts-{IsDarkMode}")" TItem="AiAgentStatistics"
-                       Options="VerdictOptions" Height="@ChartHeight(context)">
-                @foreach (var style in AiVerdictStyles.All)
-                {
-                    <ApexPointSeries TItem="AiAgentStatistics"
-                                     Items="context.AiAgents"
-                                     Name="@style.Label"
-                                     SeriesType="SeriesType.Bar"
-                                     XValue="@(a => a.Name)"
-                                     YValue="@(a => a.Of(style.Verdict))" />
-                }
-            </ApexChart>
+            <ChartFigure Label="Anfragen je KI-Agent, gestapelt nach Verifiziert, Unverifiziert und Getarnt. Die Zahlen stehen in Legende und Tabelle darunter.">
+                <ApexChart @key="@($"verdicts-{IsDarkMode}")" TItem="AiAgentStatistics"
+                           Options="VerdictOptions" Height="@ChartHeight(context)">
+                    @foreach (var style in AiVerdictStyles.All)
+                    {
+                        <ApexPointSeries TItem="AiAgentStatistics"
+                                         Items="context.AiAgents"
+                                         Name="@style.Label"
+                                         SeriesType="SeriesType.Bar"
+                                         XValue="@(a => a.Name)"
+                                         YValue="@(a => a.Of(style.Verdict))" />
+                    }
+                </ApexChart>
+            </ChartFigure>
 
             @* Legende mit Zahlen: das Verdikt ist nie nur an der Farbe erkennbar (SPEC 9). *@
             <div class="d-flex flex-wrap gap-4 mt-2" data-testid="verdict-legend">
@@ -86,7 +88,7 @@
         </MudPaper>
 
         <MudPaper Outlined="true" Class="pa-4">
-            <MudText Typo="Typo.h6">Abgerufene Seiten echter Agenten</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2">Abgerufene Seiten echter Agenten</MudText>
             <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
                 Nur verifizierte Anfragen: die IP liegt in einem veröffentlichten Bereich des Anbieters.
             </MudText>

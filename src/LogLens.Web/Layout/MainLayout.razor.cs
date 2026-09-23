@@ -9,6 +9,7 @@ public partial class MainLayout : LayoutComponentBase, IDisposable
     [Inject] private SettingsService Settings { get; set; } = null!;
 
     private MudThemeProvider _themeProvider = null!;
+    private ElementReference _mainContent;
     private bool _drawerOpen = true;
     private bool _isDarkMode;
 
@@ -44,6 +45,8 @@ public partial class MainLayout : LayoutComponentBase, IDisposable
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task SkipToContentAsync() => await _mainContent.FocusAsync();
 
     /// <summary>
     /// Ab der ersten Umschaltung gilt die Wahl des Nutzers statt des Systems – auch

@@ -1,15 +1,17 @@
 @* Anfragen je Stunde (UTC) als Säulen, mit Tabelle als Textalternative (SPEC 6, 9). *@
 @using ApexCharts
 
-<ApexChart @key="@($"{TestId}-{IsDarkMode}-{Color.LightColor}")" TItem="HourPoint"
-           Options="Options" Height="260">
-    <ApexPointSeries TItem="HourPoint"
-                     Items="Points"
-                     Name="@SeriesName"
-                     SeriesType="SeriesType.Bar"
-                     XValue="@(p => p.Label)"
-                     YValue="@(p => p.Requests)" />
-</ApexChart>
+<ChartFigure Label="@($"{SeriesName} je Stunde (UTC) als Säulen. Die Zahlen stehen in der Tabelle darunter.")">
+    <ApexChart @key="@($"{TestId}-{IsDarkMode}-{Color.LightColor}")" TItem="HourPoint"
+               Options="Options" Height="260">
+        <ApexPointSeries TItem="HourPoint"
+                         Items="Points"
+                         Name="@SeriesName"
+                         SeriesType="SeriesType.Bar"
+                         XValue="@(p => p.Label)"
+                         YValue="@(p => p.Requests)" />
+    </ApexChart>
+</ChartFigure>
 
 <MudText Typo="Typo.caption" Class="mud-text-secondary" data-testid="@($"{TestId}-summary")">
     @Summary

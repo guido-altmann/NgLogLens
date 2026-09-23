@@ -37,7 +37,7 @@ else
 {
     <RangeNote Range="Result.Range" />
 
-    <MudText Typo="Typo.h5" Class="mb-1" data-testid="headline">@Headline</MudText>
+    <MudText Typo="Typo.h5" HtmlTag="p" Class="mb-1" data-testid="headline">@Headline</MudText>
     <MudText Typo="Typo.body2" Class="mud-text-secondary mb-6" data-testid="subline">@Subline</MudText>
 
     <MudGrid Class="mb-6">
@@ -46,7 +46,7 @@ else
             <MudItem xs="12" sm="6" md="3">
                 <MudPaper Outlined="true" Class="pa-4 height-full">
                     <MudText Typo="Typo.overline" Class="mud-text-secondary">@tile.Label</MudText>
-                    <MudText Typo="Typo.h5">@tile.Value</MudText>
+                    <MudText Typo="Typo.h5" HtmlTag="p">@tile.Value</MudText>
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">@tile.Hint</MudText>
                 </MudPaper>
             </MudItem>
@@ -54,20 +54,22 @@ else
     </MudGrid>
 
     <MudPaper Outlined="true" Class="pa-4 mb-6">
-        <MudText Typo="Typo.h6" GutterBottom="true">Anteile der vier Klassen</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Anteile der vier Klassen</MudText>
 
-        <ApexChart @key="@($"share-{IsDarkMode}")" TItem="SharePoint"
-                   Options="_shareOptions" Height="110">
-            @foreach (var series in _shareSeries)
-            {
-                <ApexPointSeries TItem="SharePoint"
-                                 Items="@series.Items"
-                                 Name="@series.Style.Label"
-                                 SeriesType="SeriesType.Bar"
-                                 XValue="@(_ => "Anfragen")"
-                                 YValue="@(p => p.Requests)" />
-            }
-        </ApexChart>
+        <ChartFigure Label="Anteile von Menschen, KI-Agenten, Bots und Angriffen an allen Anfragen als Balken. Die Zahlen stehen in der Legende darunter.">
+            <ApexChart @key="@($"share-{IsDarkMode}")" TItem="SharePoint"
+                       Options="_shareOptions" Height="110">
+                @foreach (var series in _shareSeries)
+                {
+                    <ApexPointSeries TItem="SharePoint"
+                                     Items="@series.Items"
+                                     Name="@series.Style.Label"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(_ => "Anfragen")"
+                                     YValue="@(p => p.Requests)" />
+                }
+            </ApexChart>
+        </ChartFigure>
 
         @* Legende mit Zahlen: die Klasse ist nie nur an der Farbe erkennbar (SPEC 9). *@
         <div class="d-flex flex-wrap gap-4 mt-2" data-testid="class-legend">
@@ -87,7 +89,7 @@ else
 
     <MudPaper Outlined="true" Class="pa-4">
         <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-4">
-            <MudText Typo="Typo.h6">Tagesverlauf</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2">Tagesverlauf</MudText>
 
             <MudToggleGroup T="DailyView" Value="_dailyView" ValueChanged="SetDailyView"
                             Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" CheckMark="true"
@@ -99,18 +101,20 @@ else
             </MudToggleGroup>
         </div>
 
-        <ApexChart @key="@($"daily-{IsDarkMode}-{_dailyView}")" TItem="DailyTraffic"
-                   Options="_dailyOptions" Height="340">
-            @foreach (var trafficClass in VisibleClasses)
-            {
-                <ApexPointSeries TItem="DailyTraffic"
-                                 Items="@Result.Daily"
-                                 Name="@TrafficClassStyles.Label(trafficClass)"
-                                 SeriesType="SeriesType.Bar"
-                                 XValue="@(d => d.Day.ToString("dd.MM."))"
-                                 YValue="@(d => d.Of(trafficClass))" />
-            }
-        </ApexChart>
+        <ChartFigure Label="@DailyChartLabel">
+            <ApexChart @key="@($"daily-{IsDarkMode}-{_dailyView}")" TItem="DailyTraffic"
+                       Options="_dailyOptions" Height="340">
+                @foreach (var trafficClass in VisibleClasses)
+                {
+                    <ApexPointSeries TItem="DailyTraffic"
+                                     Items="@Result.Daily"
+                                     Name="@TrafficClassStyles.Label(trafficClass)"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(d => d.Day.ToString("dd.MM."))"
+                                     YValue="@(d => d.Of(trafficClass))" />
+                }
+            </ApexChart>
+        </ChartFigure>
 
         <MudExpansionPanels Elevation="0" Class="mt-2">
             <MudExpansionPanel Text="Zahlen als Tabelle" data-testid="daily-table-panel">

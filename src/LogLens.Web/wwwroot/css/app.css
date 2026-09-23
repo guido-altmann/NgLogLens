@@ -136,3 +136,49 @@ html, body {
     border-radius: var(--mud-default-borderradius);
     background-color: var(--mud-palette-background-gray);
 }
+
+/* Barrierefreiheit (SPEC 9) ------------------------------------------------ */
+
+/* Sprungmarke: unsichtbar, bis sie per Tab den Fokus bekommt. */
+.skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2000;
+    padding: 0.5rem 1rem;
+    border: 0;
+    border-radius: var(--mud-default-borderradius);
+    font: inherit;
+    color: var(--mud-palette-primary-text);
+    background-color: var(--mud-palette-primary);
+    cursor: pointer;
+    transform: translateY(-200%);
+}
+
+.skip-link:focus {
+    transform: none;
+}
+
+/* Der Inhalt bekommt den Fokus nur per Sprungmarke; ein Rahmen um die ganze
+   Seite wäre dort keine Hilfe. */
+.main-content:focus {
+    outline: none;
+}
+
+/* Sichtbarer Tastaturfokus. MudBlazor zeigt ihn bei Schaltflächen nur als leichte
+   Tönung, die im dunklen Modus kaum zu sehen ist. */
+a:focus-visible,
+button:focus-visible,
+.mud-nav-link:focus-visible,
+.mud-expand-panel-header:focus-visible,
+.skip-link:focus {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+#blazor-error-ui .dismiss {
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+}

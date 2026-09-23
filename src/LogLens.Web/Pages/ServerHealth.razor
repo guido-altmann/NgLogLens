@@ -18,7 +18,7 @@
     <MudGrid Class="mb-2">
         <MudItem xs="12" md="6">
             <MudPaper Outlined="true" Class="pa-4 height-full">
-                <MudText Typo="Typo.h6" GutterBottom="true">Statuscodes</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Statuscodes</MudText>
                 <div class="d-flex flex-wrap gap-2 mb-2" data-testid="status-classes">
                     @foreach (var group in StatusClasses(health))
                     {
@@ -59,7 +59,7 @@
 
         <MudItem xs="12" md="6">
             <MudPaper Outlined="true" Class="pa-4 height-full">
-                <MudText Typo="Typo.h6" GutterBottom="true">Serverfehler (5xx)</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Serverfehler (5xx)</MudText>
                 @if (health.ServerErrors.Count == 0)
                 {
                     <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" data-testid="no-server-errors">
@@ -95,20 +95,22 @@
     </MudGrid>
 
     <MudPaper Outlined="true" Class="pa-4 mb-6">
-        <MudText Typo="Typo.h6">Proxy-Instanzen</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2">Proxy-Instanzen</MudText>
         <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
             Wechselt die IP des Proxys, wurde er meist neu gestartet oder neu deployt.
         </MudText>
 
-        <ApexChart @key="@($"proxies-{IsDarkMode}")" TItem="ProxyInstance"
-                   Options="ProxyOptions" Height="@ProxyChartHeight(health)">
-            <ApexRangeSeries TItem="ProxyInstance"
-                             Items="health.ProxyInstances"
-                             Name="Aktiv"
-                             XValue="@(p => p.ProxyIp)"
-                             YMinValue="@(p => DayStart(p.FirstDay))"
-                             YMaxValue="@(p => DayStart(p.LastDay.AddDays(1)))" />
-        </ApexChart>
+        <ChartFigure Label="Zeitleiste der Proxy-Instanzen: je Proxy-IP der Zeitraum, in dem sie aktiv war. Die Daten stehen in der Tabelle darunter.">
+            <ApexChart @key="@($"proxies-{IsDarkMode}")" TItem="ProxyInstance"
+                       Options="ProxyOptions" Height="@ProxyChartHeight(health)">
+                <ApexRangeSeries TItem="ProxyInstance"
+                                 Items="health.ProxyInstances"
+                                 Name="Aktiv"
+                                 XValue="@(p => p.ProxyIp)"
+                                 YMinValue="@(p => DayStart(p.FirstDay))"
+                                 YMaxValue="@(p => DayStart(p.LastDay.AddDays(1)))" />
+            </ApexChart>
+        </ChartFigure>
 
         <MudSimpleTable Dense="true" Elevation="0" data-testid="proxies">
             <thead>
@@ -142,7 +144,7 @@
     </MudPaper>
 
     <MudPaper Outlined="true" Class="pa-4 mb-6">
-        <MudText Typo="Typo.h6">Error-Zeilen</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2">Error-Zeilen</MudText>
         <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2" data-testid="error-summary">
             @ErrorSummary(context)
         </MudText>
@@ -182,7 +184,7 @@
     </MudPaper>
 
     <MudPaper Outlined="true" Class="pa-4">
-        <MudText Typo="Typo.h6" GutterBottom="true">Parser-Diagnose</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Parser-Diagnose</MudText>
         <MudSimpleTable Dense="true" Elevation="0" data-testid="diagnostics">
             <tbody>
                 @foreach (var row in DiagnosticRows(context.Diagnostics))
@@ -197,7 +199,7 @@
 
         @if (context.Diagnostics.Files.Count > 1)
         {
-            <MudText Typo="Typo.subtitle2" Class="mt-4">Dateien</MudText>
+            <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-4">Dateien</MudText>
             <MudSimpleTable Dense="true" Elevation="0" data-testid="files">
                 <thead>
                     <tr>
@@ -221,7 +223,7 @@
 
         @if (context.Diagnostics.UnknownSamples.Count > 0)
         {
-            <MudText Typo="Typo.subtitle2" Class="mt-4">
+            <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-4">
                 Nicht erkannte Zeilen (Beispiele, höchstens @MaxUnknownSamples)
             </MudText>
             <MudSimpleTable Dense="true" Elevation="0" data-testid="unknown-samples">

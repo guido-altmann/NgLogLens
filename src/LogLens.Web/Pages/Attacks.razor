@@ -22,17 +22,19 @@
         <MudText Typo="Typo.body1" Class="mb-4" data-testid="attack-summary">@Summary(context)</MudText>
 
         <MudPaper Outlined="true" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h6" GutterBottom="true">Kategorien</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Kategorien</MudText>
 
-            <ApexChart @key="@($"categories-{IsDarkMode}")" TItem="CategoryCount"
-                       Options="CategoryOptions" Height="@CategoryChartHeight(context)">
-                <ApexPointSeries TItem="CategoryCount"
-                                 Items="context.Attacks.Categories"
-                                 Name="Anfragen"
-                                 SeriesType="SeriesType.Bar"
-                                 XValue="@(c => c.Category)"
-                                 YValue="@(c => c.Requests)" />
-            </ApexChart>
+            <ChartFigure Label="Angriffe je Kategorie als Balken. Die Zahlen stehen in der Tabelle darunter.">
+                <ApexChart @key="@($"categories-{IsDarkMode}")" TItem="CategoryCount"
+                           Options="CategoryOptions" Height="@CategoryChartHeight(context)">
+                    <ApexPointSeries TItem="CategoryCount"
+                                     Items="context.Attacks.Categories"
+                                     Name="Anfragen"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(c => c.Category)"
+                                     YValue="@(c => c.Requests)" />
+                </ApexChart>
+            </ChartFigure>
 
             <MudSimpleTable Dense="true" Elevation="0" Class="mt-2" data-testid="categories">
                 <thead>
@@ -60,7 +62,7 @@
 
         <MudPaper Outlined="true" Class="pa-4 mb-6">
             <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
-                <MudText Typo="Typo.h6">Scanner</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2">Scanner</MudText>
 
                 @if (context.Scanners.Count > 0)
                 {
@@ -128,7 +130,7 @@
         </MudPaper>
 
         <MudPaper Outlined="true" Class="pa-4">
-            <MudText Typo="Typo.h6" GutterBottom="true">Tageszeit: Angriffe</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2" GutterBottom="true">Tageszeit: Angriffe</MudText>
             <HourlyChart Values="context.Attacks.RequestsPerHour" SeriesName="Angriffe"
                          Color="AttackColor" TestId="attack-hours" />
         </MudPaper>

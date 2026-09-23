@@ -1,0 +1,13 @@
+@* Ein Diagramm ist für Screenreader ein Bild mit Kurzbeschreibung. Die SVG-Innereien
+   von ApexCharts (Achsen, Ticks, Tooltips) blieben sonst eine Folge zusammenhangloser
+   Zahlen. Die Werte selbst stehen jeweils in Legende oder Tabelle daneben (SPEC 9). *@
+<div class="chart-figure" role="img" aria-label="@Label">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>Was das Diagramm zeigt und wo die Zahlen stehen.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

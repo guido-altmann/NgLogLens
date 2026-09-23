@@ -51,6 +51,11 @@ public partial class Overview : ComponentBase, IDisposable
         _ => [TrafficClass.Human, TrafficClass.AiAgent, TrafficClass.Bot, TrafficClass.Attack],
     };
 
+    /// <summary>Kurzbeschreibung des Tagesverlaufs für Screenreader; nennt die gezeigten Klassen.</summary>
+    private string DailyChartLabel =>
+        $"Anfragen pro Tag als gestapelte Säulen: {string.Join(", ", VisibleClasses.Select(TrafficClassStyles.Label))}. "
+        + "Die Zahlen stehen in der Tabelle darunter.";
+
     private int VisibleTotal(DailyTraffic day) => _dailyView switch
     {
         DailyView.HumansOnly => day.Human,
