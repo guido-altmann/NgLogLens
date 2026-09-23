@@ -81,7 +81,9 @@ public sealed class AccessibilityTests : DetailPageTestContext
         Assert.Equal(charts, figures.Count);
         Assert.All(figures, figure =>
         {
-            Assert.Equal("img", figure.GetAttribute("role"));
+            // Kein role="img": die Tastatur-Navigation von ApexCharts bliebe sonst stumm.
+            Assert.Equal("FIGURE", figure.TagName);
+            Assert.Null(figure.GetAttribute("role"));
             Assert.False(string.IsNullOrWhiteSpace(figure.GetAttribute("aria-label")));
         });
     }

@@ -176,6 +176,11 @@ button:focus-visible,
     outline-offset: 2px;
 }
 
+/* <figure> um die Diagramme (Shared/ChartFigure.razor) ohne Browser-Einzug. */
+.chart-figure {
+    margin: 0;
+}
+
 #blazor-error-ui .dismiss {
     border: 0;
     background: none;

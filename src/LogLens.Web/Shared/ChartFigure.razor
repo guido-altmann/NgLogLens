@@ -1,9 +1,10 @@
-@* Ein Diagramm ist für Screenreader ein Bild mit Kurzbeschreibung. Die SVG-Innereien
-   von ApexCharts (Achsen, Ticks, Tooltips) blieben sonst eine Folge zusammenhangloser
-   Zahlen. Die Werte selbst stehen jeweils in Legende oder Tabelle daneben (SPEC 9). *@
-<div class="chart-figure" role="img" aria-label="@Label">
+@* Rahmen um ein Diagramm mit deutscher Kurzbeschreibung und Verweis auf die Zahlen in
+   Legende oder Tabelle daneben (SPEC 9). Bewusst <figure> und nicht role="img":
+   ApexCharts bringt eigene Tastatur-Navigation durch die Datenpunkte samt Ansagen
+   für Screenreader mit, und ein Bild würde all das verschlucken. *@
+<figure class="chart-figure" aria-label="@Label">
     @ChildContent
-</div>
+</figure>
 
 @code {
     /// <summary>Was das Diagramm zeigt und wo die Zahlen stehen.</summary>
