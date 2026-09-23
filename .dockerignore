@@ -1,0 +1,11 @@
+# Nur src/ und die Build-Props werden gebraucht. Vor allem keine Logs ins Image.
+**/bin/
+**/obj/
+publish/
+tests/
+docs/
+.git/
+.vs/
+.vscode/
+.idea/
+*.log
