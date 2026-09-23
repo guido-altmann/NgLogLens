@@ -2,8 +2,8 @@
 
 @using LogLens.Web.Shared
 
-<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode"
-                  ObserveSystemDarkModeChange="_followsSystemPreference" />
+<MudThemeProvider @ref="_themeProvider" Theme="AppTheme.Theme" @bind-IsDarkMode="_isDarkMode"
+                  ObserveSystemDarkModeChange="FollowsSystem" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -17,7 +17,7 @@
         <MudSpacer />
         <PeriodFilter />
         <MudIconButton Icon="@DarkModeIcon" Class="ml-2" Color="Color.Inherit"
-                       aria-label="@DarkModeLabel" OnClick="ToggleDarkMode" />
+                       aria-label="@DarkModeLabel" OnClick="ToggleDarkModeAsync" data-testid="theme-toggle" />
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always">

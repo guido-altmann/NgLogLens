@@ -12,6 +12,16 @@ html, body {
     color: #555;
 }
 
+/* Bis Blazor läuft, gibt es noch kein MudBlazor-Theme. Damit ein dunkles System
+   beim Laden nicht weiß aufblitzt, übernimmt der Ladebildschirm dessen Hintergrund
+   (Palette „dunkel" in Layout/AppTheme.cs). */
+@media (prefers-color-scheme: dark) {
+    .loading-screen {
+        background-color: #32333d;
+        color: rgba(255, 255, 255, 0.7);
+    }
+}
+
 #blazor-error-ui {
     display: none;
     position: fixed;

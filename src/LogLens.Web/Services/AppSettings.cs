@@ -3,6 +3,14 @@ using LogLens.Core;
 
 namespace LogLens.Web.Services;
 
+/// <summary>Erscheinungsbild der Oberfläche (SPEC 8: folgt dem System, umschaltbar).</summary>
+public enum ThemePreference
+{
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>
 /// Die Einstellungen aus SPEC 8.9 in genau der Form, in der sie in localStorage
 /// liegen. Nur Einstellungen werden gespeichert, niemals Loginhalte (CLAUDE.md,
@@ -35,6 +43,9 @@ public sealed record AppSettings
     /// <summary>Schalter „Monitoring aus Seitenaufrufen herausrechnen" (SPEC 5.8).</summary>
     public bool ExcludeMonitoring { get; init; }
 
+    /// <summary>Hell, dunkel oder wie das Betriebssystem. Ändert nur die Anzeige.</summary>
+    public ThemePreference Theme { get; init; }
+
     /// <summary>
     /// Einstellungen, die eine Anfrage anders einordnen oder zählen lassen. Ändert sich
     /// eine davon, muss die geöffnete Datei neu ausgewertet werden.
@@ -57,6 +68,8 @@ public sealed record AppSettings
 /// Quellgenerierte Deserialisierung: unter WebAssembly wird getrimmt, Reflexion über
 /// Modelltypen wäre dort weder sicher noch schnell (wie in <c>LogLens.Core</c>).
 /// </summary>
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true)]
 [JsonSerializable(typeof(AppSettings))]
 internal sealed partial class SettingsJsonContext : System.Text.Json.Serialization.JsonSerializerContext;

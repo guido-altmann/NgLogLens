@@ -4,14 +4,18 @@ using MudBlazor;
 
 namespace LogLens.Web.Layout;
 
-public partial class MainLayout : LayoutComponentBase
+public partial class MainLayout : LayoutComponentBase, IDisposable
 {
     [Inject] private SettingsService Settings { get; set; } = null!;
 
     private MudThemeProvider _themeProvider = null!;
     private bool _drawerOpen = true;
     private bool _isDarkMode;
-    private bool _followsSystemPreference = true;
+
+    /// <summary>Erst nach dem ersten Rendern gibt es JS-Interop und damit das System-Schema.</summary>
+    private bool _rendered;
+
+    private bool FollowsSystem => Settings.Current.Theme == ThemePreference.System;
 
     private string DarkModeIcon => _isDarkMode
         ? Icons.Material.Outlined.LightMode
@@ -20,6 +24,8 @@ public partial class MainLayout : LayoutComponentBase
     private string DarkModeLabel => _isDarkMode
         ? "Zu hellem Erscheinungsbild wechseln"
         : "Zu dunklem Erscheinungsbild wechseln";
+
+    protected override void OnInitialized() => Settings.Changed += OnSettingsChanged;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -32,20 +38,37 @@ public partial class MainLayout : LayoutComponentBase
         // werden geladen, bevor irgendeine Datei geöffnet werden kann.
         await Settings.InitializeAsync();
 
-        if (_followsSystemPreference)
-        {
-            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-        }
-
+        _rendered = true;
+        await ApplyThemeAsync();
         StateHasChanged();
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
-    private void ToggleDarkMode()
+    /// <summary>
+    /// Ab der ersten Umschaltung gilt die Wahl des Nutzers statt des Systems – auch
+    /// beim nächsten Besuch, denn sie ist eine Einstellung wie jede andere.
+    /// </summary>
+    private Task ToggleDarkModeAsync() => Settings.SaveAsync(Settings.Current with
     {
-        // Ab der ersten manuellen Umschaltung gewinnt die Auswahl des Nutzers.
-        _followsSystemPreference = false;
-        _isDarkMode = !_isDarkMode;
+        Theme = _isDarkMode ? ThemePreference.Light : ThemePreference.Dark,
+    });
+
+    private async Task ApplyThemeAsync()
+    {
+        _isDarkMode = Settings.Current.Theme switch
+        {
+            ThemePreference.Dark => true,
+            ThemePreference.Light => false,
+            _ => _rendered && await _themeProvider.GetSystemDarkModeAsync(),
+        };
     }
+
+    private void OnSettingsChanged() => _ = InvokeAsync(async () =>
+    {
+        await ApplyThemeAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Settings.Changed -= OnSettingsChanged;
 }

@@ -179,6 +179,7 @@ public sealed class SettingsService(
         MaxFileSizeMegabytes = Math.Clamp(settings.MaxFileSizeMegabytes, 1, 2_048),
         MonitoringNetworks = Clean(settings.MonitoringNetworks),
         OwnDomains = Clean(settings.OwnDomains),
+        Theme = Enum.IsDefined(settings.Theme) ? settings.Theme : ThemePreference.System,
     };
 
     private static IReadOnlyList<string> Clean(IReadOnlyList<string>? values) =>
