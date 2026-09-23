@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using LogLens.Core;
 using LogLens.Core.Models;
@@ -27,6 +28,9 @@ public partial class Upload : ComponentBase, IDisposable
     private string? _error;
     private bool _cancelled;
     private bool _dragging;
+
+    /// <summary>Dauer der letzten Auswertung, zum Nachprüfen der 5 Sekunden aus SPEC 9.</summary>
+    private TimeSpan? _elapsed;
 
     /// <summary>Endungen im Dateidialog. Coolify exportiert .log, Browser speichern oft als .txt.</summary>
     private const string AcceptedFileTypes = ".log,.txt";
@@ -63,6 +67,10 @@ public partial class Upload : ComponentBase, IDisposable
 
     private static string Number(int value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
+    private string ElapsedText => _elapsed is { } elapsed
+        ? $"{elapsed.TotalSeconds.ToString("N1", CultureInfo.CurrentCulture)} s"
+        : string.Empty;
+
     private string FileSummary => _fileNames.Count switch
     {
         0 => "Auswertung",
@@ -85,6 +93,7 @@ public partial class Upload : ComponentBase, IDisposable
         _error = null;
         _cancelled = false;
         _progress = null;
+        _elapsed = null;
         _fileNames = [.. files.Select(f => f.Name)];
         State.Clear();
 
@@ -93,10 +102,12 @@ public partial class Upload : ComponentBase, IDisposable
 
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             var result = await Pipeline.AnalyzeAsync(
                 BrowserLogFiles.ToSources(files, ParserOptions),
                 new UiProgress(ReportProgress),
                 cancellation.Token);
+            _elapsed = stopwatch.Elapsed;
 
             if (result.Diagnostics.TotalLines == 0)
             {

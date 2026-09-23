@@ -118,6 +118,13 @@
                     <td>Nicht erkannte Zeilen</td>
                     <td class="text-right">@result.Diagnostics.UnknownLines.ToString("N0")</td>
                 </tr>
+                @if (_elapsed is not null)
+                {
+                    <tr>
+                        <td>Dauer der Auswertung</td>
+                        <td class="text-right" data-testid="elapsed">@ElapsedText</td>
+                    </tr>
+                }
             </tbody>
         </MudSimpleTable>
 

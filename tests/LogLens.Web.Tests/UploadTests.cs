@@ -133,6 +133,21 @@ public sealed class UploadTests : MudBlazorTestContext
             cut.Find("[data-testid=summary-sentence]").TextContent.Trim());
     }
 
+    /// <summary>
+    /// SPEC 9 verlangt unter 5 Sekunden im Browser. Der Core-Benchmark misst auf der
+    /// JIT-Runtime; die Anzeige macht den Wert unter WebAssembly nachprüfbar.
+    /// </summary>
+    [Fact]
+    public void Zeigt_die_Dauer_der_Auswertung()
+    {
+        var cut = Render<Upload>();
+
+        UploadLog(cut, SampleLog);
+        cut.WaitForElement("[data-testid=summary]", Patience);
+
+        Assert.Matches(@"^\d+,\d s$", cut.Find("[data-testid=elapsed]").TextContent.Trim());
+    }
+
     [Fact]
     public void Legt_das_Ergebnis_im_Zustand_ab_damit_die_Uebersicht_es_findet()
     {
