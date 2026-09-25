@@ -21,11 +21,17 @@
                        aria-label="Navigation ein- oder ausblenden" aria-expanded="@(_drawerOpen ? "true" : "false")"
                        aria-controls="main-navigation" OnClick="ToggleDrawer" data-testid="drawer-toggle" />
         <MudText Typo="Typo.h6" HtmlTag="p" Class="ml-2">NgLogLens</MudText>
-        <MudText Typo="Typo.body2" Class="ml-2">by Guido Altmann</MudText>
+        <MudLink Href="https://www.guido-altmann.de" Target="_blank" rel="noopener noreferrer"
+                 Typo="Typo.body2" Color="Color.Inherit" Class="ml-2" data-testid="author-link">
+            by Guido Altmann
+        </MudLink>
         <MudSpacer />
         <PeriodFilter />
         <MudIconButton Icon="@DarkModeIcon" Class="ml-2" Color="Color.Inherit"
                        aria-label="@DarkModeLabel" OnClick="ToggleDarkModeAsync" data-testid="theme-toggle" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
+                       Href="https://github.com/guido-altmann/NgLogLens" Target="_blank" Rel="noopener noreferrer"
+                       aria-label="Quellcode auf GitHub (öffnet in neuem Tab)" data-testid="github-link" />
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always" id="main-navigation">
